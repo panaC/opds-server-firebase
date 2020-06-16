@@ -1,0 +1,13 @@
+{
+  "extends": "./node_modules/gts/tsconfig-google.json",
+  "compilerOptions": {
+    "noUnusedLocals": true,
+    "outDir": "build",
+    "sourceMap": true,
+    "strict": true,
+  },
+  "compileOnSave": true,
+  "include": [
+    "src"
+  ]
+}

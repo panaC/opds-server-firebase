@@ -1,4 +1,4 @@
-*.json
+opds-server*.json
 
 # Logs
 logs
