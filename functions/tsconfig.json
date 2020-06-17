@@ -14,7 +14,8 @@
     "pretty": true,
     "sourceMap": true,
     "strict": true,
-    "target": "es2018"
+    "target": "es2018",
+    "experimentalDecorators": true
   },
   "include": [
     "src"
@@ -22,5 +23,5 @@
   "exclude": [
     "node_modules"
   ],
-  "compileOnSave": true,
+  "compileOnSave": true
 }
