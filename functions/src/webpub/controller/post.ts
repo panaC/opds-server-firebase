@@ -2,7 +2,7 @@ import * as functions from "firebase-functions";
 // import * as admin from "firebase-admin";
 import { plainToClass } from "class-transformer";
 import { WebpubDto } from "../dto/webpub.dto";
-import { validate } from "class-validator";
+import { validateOrReject } from "class-validator";
 import { response } from "../../utils/response"
 
 export const post = async (req: functions.https.Request, res: functions.Response<any>) => {
@@ -12,24 +12,23 @@ export const post = async (req: functions.https.Request, res: functions.Response
     let webpubRaw: Object = {};
     try {
         webpubRaw = JSON.parse(req.body["webpub"]);
+    } finally {
 
-    } catch (e) {
-        // ignore
-    }
-    if (Object.keys(webpubRaw).length) {
+        if (Object.keys(webpubRaw).length) {
 
-        const webpubClass = plainToClass(WebpubDto, webpubRaw);
-        const validError = await validate(webpubClass);
+            const webpubClass = plainToClass(WebpubDto, webpubRaw);
+            try {
+                await validateOrReject(webpubClass);
 
-        if (validError.length) {
-            return send(400, "readium web publication not valid", validError);
-        } else {
+            } catch (e) {
+                return send(400, "readium web publication not valid", e);
+            }
 
             // save in db here
 
             return send(200, "", {});
+        } else {
+            return send(400, "the value of 'webpub' is not a json object");
         }
-    } else {
-        return send(400, "the value of 'webpub' is not a json object");
     }
 };
