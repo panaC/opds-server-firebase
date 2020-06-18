@@ -1,7 +1,7 @@
 import * as functions from "firebase-functions";
 // import * as admin from "firebase-admin";
 import { response } from "../utils/response";
-import { post, get, update, delete_ } from "./controller";
+import { create, read, update, delete_ } from "./controller";
 import { initGlobalConverters_GENERIC, initGlobalConverters_SHARED } from "r2-shared-js/dist/es8-es2017/src/init-globals";
 
 initGlobalConverters_GENERIC();
@@ -15,11 +15,11 @@ export const webpubFonction = async (req: functions.https.Request, res: function
 
         switch (req.method) {
             case "POST": {
-                return await post(req, res);
+                return await create(req, res);
             }
 
             case "GET": {
-                return await get(req, res);
+                return await read(req, res);
             }
 
             case "PUT": {

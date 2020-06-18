@@ -37,7 +37,7 @@ export const handleWebpub = async (
 
         console.error("webpub not valid");
         console.error(e);
-        return send(400, "readium web publication not valid", e);
+        return send(400, "readium web publication not valid", e instanceof Error ? e.toString() : e);
     }
 
     try {
@@ -51,7 +51,7 @@ export const handleWebpub = async (
     }
 }
 
-export const post = async (req: functions.https.Request, res: functions.Response<any>) => {
+export const create = async (req: functions.https.Request, res: functions.Response<any>) => {
 
     return await handleWebpub(req, res, async (publication) => {
         return await savePublicationInDb(publication);
@@ -73,7 +73,7 @@ export const update = async (req: functions.https.Request, res: functions.Respon
     }
 }
 
-export const get = async (req: functions.https.Request, res: functions.Response<any>) => {
+export const read = async (req: functions.https.Request, res: functions.Response<any>) => {
 
     const send = response(res);
     const id = req.query["id"];

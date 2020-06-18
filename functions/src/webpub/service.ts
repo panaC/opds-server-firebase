@@ -7,9 +7,11 @@ import { nanoid } from "nanoid";
 export const savePublicationInDb = async (publication: R2Publication): Promise<IWebpubDb["publication"]> => {
     
     const pubId = publication.Metadata.Identifier = publication.Metadata.Identifier || nanoid();
-    const doc = {
+    const doc: IWebpubDb = {
         popularityCounter: 0,
         publication: TaJsonSerialize(publication),
+        createTimestamp: Date.now(),
+        modifiedTimestamp: Date.now(),
     };
     
     const document = await webpubDb.doc(pubId).get();
@@ -41,14 +43,16 @@ export const getAllPublication = async (): Promise<IWebpubDb["publication"][]> =
 
 export const updatePublicationInDb = async (id: string, publication: R2Publication): Promise<IWebpubDb["publication"]> => {
 
-    const doc = {
-        popularityCounter: 0,
-        publication: TaJsonSerialize(publication),
-    };
     const ref = webpubDb.doc(id);
     const document = await ref.get();
     if (document.exists) {
-        doc.popularityCounter = document.data()?.popularityCounter || doc.popularityCounter;
+        const data = document.data() as IWebpubDb;
+        const doc: IWebpubDb = {
+            ...data,
+            popularityCounter: typeof data.popularityCounter === "number" ? data.popularityCounter + 1 : 0,
+            modifiedTimestamp: Date.now(),
+            publication: TaJsonSerialize(publication),
+        }
 
         await ref.update(doc);
 
