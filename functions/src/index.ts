@@ -1,10 +1,5 @@
 import { addMessage } from './addMessage';
 import { webpubFonction } from './webpub';
-
-// The Firebase Admin SDK to access Cloud Firestore.
-import * as admin from 'firebase-admin';
-admin.initializeApp();
-
 import { https } from "firebase-functions";
 
 // Start writing Firebase Functions

@@ -1,7 +1,11 @@
 import * as functions from "firebase-functions";
 // import * as admin from "firebase-admin";
 import { response } from "../utils/response";
-import { post } from "./controller/post";
+import { post } from "./controller";
+import { initGlobalConverters_GENERIC, initGlobalConverters_SHARED } from "r2-shared-js/dist/es8-es2017/src/init-globals";
+
+initGlobalConverters_GENERIC();
+initGlobalConverters_SHARED();
 
 export const webpubFonction = async (req: functions.https.Request, res: functions.Response<any>) => {
 
