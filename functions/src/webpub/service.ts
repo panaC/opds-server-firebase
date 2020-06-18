@@ -1,42 +1,73 @@
 import { Publication as R2Publication } from "r2-shared-js/dist/es8-es2017/src/models/publication";
 import { webpubDb } from "./db";
 import { TaJsonSerialize } from "r2-lcp-js/dist/es8-es2017/src/serializable";
+import { IWebpubDb } from "./interface/webpubDb.interface";
+import { nanoid } from "nanoid";
 
-export const savePublicationInDb = async (publication: R2Publication) => {
-
-    let pubId = publication.Metadata.Identifier;
-
-    const insertDoc = async (id?: string) => {
-
-        const doc = {
-            popularityCounter: 0,
-            publication: TaJsonSerialize(publication),
-        };
-
-        if (id) {
-            await webpubDb.doc(id).set(doc);
-        } else {
-            const document = await webpubDb.add(doc);
-            id = document.id;
-        }
-        publication.Metadata.Identifier = id;
-
-    }
-
-    if (pubId) {
-        // find publication in DB
-        // if exists -> error
-
-        const document = await webpubDb.doc(pubId).get();
-        if (document.exists) {
-            throw new Error("publication already exists");
-        } else {
-            await insertDoc(pubId);
-        }
+export const savePublicationInDb = async (publication: R2Publication): Promise<IWebpubDb["publication"]> => {
+    
+    const pubId = publication.Metadata.Identifier = publication.Metadata.Identifier || nanoid();
+    const doc = {
+        popularityCounter: 0,
+        publication: TaJsonSerialize(publication),
+    };
+    
+    const document = await webpubDb.doc(pubId).get();
+    if (document.exists) {
+        throw new Error("publication already exists");
     } else {
-        // insert in db with a randomId
-        await insertDoc();
+        await webpubDb.doc(pubId).set(doc);
     }
 
-    return publication;
+    return doc.publication;
+}
+
+export const getPublicationInDb = async (id: string): Promise<IWebpubDb["publication"]> => {
+
+    const document = await webpubDb.doc(id).get();
+    const publication = document.data()?.publication;
+    if (publication) {
+        return publication
+    } else {
+        throw new Error("publication not found");
+    }
+}
+
+export const getAllPublication = async (): Promise<IWebpubDb["publication"][]> => {
+
+    const document = await webpubDb.get();
+    return document.docs.map((v) => v.data().publication);
+}
+
+export const updatePublicationInDb = async (id: string, publication: R2Publication): Promise<IWebpubDb["publication"]> => {
+
+    const doc = {
+        popularityCounter: 0,
+        publication: TaJsonSerialize(publication),
+    };
+    const ref = webpubDb.doc(id);
+    const document = await ref.get();
+    if (document.exists) {
+        doc.popularityCounter = document.data()?.popularityCounter || doc.popularityCounter;
+
+        await ref.update(doc);
+
+        return doc.publication;
+    } else {
+        throw new Error("publication not found");
+    }
+}
+
+export const deletePublicationInDb = async (id: string): Promise<IWebpubDb["publication"]> => {
+
+    const ref = webpubDb.doc(id);
+    const document = await ref.get();
+    if (document.exists) {
+
+        await ref.delete();
+
+        return {};
+    } else {
+        throw new Error("publication not found");
+    }
 }

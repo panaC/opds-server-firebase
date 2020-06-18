@@ -3,14 +3,19 @@ import { plainToClass } from "class-transformer";
 import { WebpubDto } from "./dto/webpub.dto";
 import { validateOrReject } from "class-validator";
 import { response } from "../utils/response"
-import { savePublicationInDb } from "./service";
+import { savePublicationInDb, getPublicationInDb, getAllPublication, updatePublicationInDb, deletePublicationInDb } from "./service";
 import { Publication as R2Publication } from "r2-shared-js/dist/es8-es2017/src/models/publication";
 import { JSON as TAJSON } from "ta-json-x";
+import { IWebpubDb } from "./interface/webpubDb.interface";
 
-export const post = async (req: functions.https.Request, res: functions.Response<any>) => {
-
+export const handleWebpub = async (
+    req: functions.https.Request,
+    res: functions.Response<any>,
+    callBack: (publication: R2Publication) => Promise<IWebpubDb["publication"]>,
+    method: string
+) => {
     const send = response(res);
-    const webpubStringified = req.body["webpub"];
+    const webpubStringified = req.body["publication"];
 
     let webpubParsed: Object;
     let publicationParsed: R2Publication;
@@ -21,7 +26,7 @@ export const post = async (req: functions.https.Request, res: functions.Response
 
         console.error("webpub parsing error");
         console.error(e);
-        return send(400, "the value of 'webpub' key is not a json object");
+        return send(400, "the value of 'publication' key is not a json object");
     }
 
     try {
@@ -35,16 +40,100 @@ export const post = async (req: functions.https.Request, res: functions.Response
         return send(400, "readium web publication not valid", e);
     }
 
-    let publication: R2Publication;
     try {
-        publication = await savePublicationInDb(publicationParsed);
-
+        const publication = await callBack(publicationParsed);
+        return send(200, "", publication);
     } catch (e) {
 
-        console.error("SavePublicationInDb", publicationParsed);
+        console.error(method, publicationParsed);
         console.error(e);
-        return send(500, "Error to save the publication in DB", e.toString());
+        return send(500, "Error to " + method + "the publication in DB", e.toString());
+    }
+}
+
+export const post = async (req: functions.https.Request, res: functions.Response<any>) => {
+
+    return await handleWebpub(req, res, async (publication) => {
+        return await savePublicationInDb(publication);
+    }, "save");
+}
+
+export const update = async (req: functions.https.Request, res: functions.Response<any>) => {
+
+    const send = response(res);
+    const id = req.query["id"];
+
+    if (typeof id === "string" && id) {
+        return await handleWebpub(req, res, async (publication) => {
+            return await updatePublicationInDb(id, publication);
+        }, "update");
+    } else {
+
+        return send(400, "the value of 'id' key is not a string");
+    }
+}
+
+export const get = async (req: functions.https.Request, res: functions.Response<any>) => {
+
+    const send = response(res);
+    const id = req.query["id"];
+
+    if (id) {
+
+        if (typeof id !== "string") {
+
+            return send(400, "the value of 'id' key is not a string");
+        }
+
+        try {
+            const publication = await getPublicationInDb(id);
+            return send(200, "", publication);
+
+        } catch (e) {
+
+            console.error("getPublicationWithId");
+            console.error(e);
+            return send(500, "Error to get the publication from DB", e.toString());
+
+        }
+
+    } else {
+
+        try {
+            const publication = await getAllPublication();
+            return send(200, "", publication);
+
+        } catch (e) {
+
+            console.error("getAllPublication");
+            console.error(e);
+            return send(500, "Error to get all publication from DB", e.toString());
+
+        }
+    }
+};
+
+export const delete_ = async (req: functions.https.Request, res: functions.Response<any>) => {
+
+    const send = response(res);
+    const id = req.query["id"];
+
+    if (typeof id === "string" && id) {
+        
+        try {
+            const publication = await deletePublicationInDb(id);
+            return send(200, "", publication);
+
+        } catch (e) {
+
+            console.error("deletePublicationInDb");
+            console.error(e);
+            return send(500, "Error to delete the publication from DB", e.toString());
+
+        }
+    } else {
+
+        return send(400, "the value of 'id' key is not a string");
     }
 
-    return send(200, "", publication);
-};
+}
