@@ -1,3 +1,7 @@
+serviceAccountKey.json
+config.json
+
+#
 ## Compiled JavaScript files
 **/*.js
 **/*.js.map
@@ -9,8 +13,6 @@ node_modules/
 
 lib/
 build/
-
-opds-server*.json
 
 # Logs
 logs

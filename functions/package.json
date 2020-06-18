@@ -6,7 +6,8 @@
     "shell": "npm run build && firebase functions:shell",
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
-    "logs": "firebase functions:log"
+    "logs": "firebase functions:log",
+    "test": "mocha --reporter spec build/test"
   },
   "engines": {
     "node": "12"
@@ -25,8 +26,9 @@
     "ta-json-x": "^2.5.2"
   },
   "devDependencies": {
-    "typescript": "^3.8.3",
-    "firebase-functions-test": "^0.2.0",
-    "@types/node": "^13.11.1"
+    "@types/node": "^13.11.1",
+    "firebase-functions-test": "^0.2.1",
+    "mocha": "^8.0.1",
+    "typescript": "^3.8.3"
   }
 }

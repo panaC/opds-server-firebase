@@ -45,8 +45,8 @@ export const updatePublicationInDb = async (id: string, publication: R2Publicati
 
     const ref = webpubDb.doc(id);
     const document = await ref.get();
-    if (document.exists) {
-        const data = document.data() as IWebpubDb;
+    if (document.exists && document.data()) {
+        const data = document.data() as IWebpubDb; // bad infer
         const doc: IWebpubDb = {
             ...data,
             popularityCounter: typeof data.popularityCounter === "number" ? data.popularityCounter + 1 : 0,

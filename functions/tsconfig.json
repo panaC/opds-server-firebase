@@ -15,10 +15,13 @@
     "sourceMap": true,
     "strict": true,
     "target": "es2018",
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "resolveJsonModule": true
   },
   "include": [
-    "src"
+    "src",
+    "test",
+    "config.json"
   ],
   "exclude": [
     "node_modules"
