@@ -5,7 +5,7 @@ import * as testFactory from 'firebase-functions-test';
 import * as chai from "chai";
 const assert = chai.assert;
 
-import * as config from "../config.json";
+import * as config from "./config.json";
 const test = testFactory(config["FIREBASE_CONFIG"], config["GOOGLE_APPLICATION_CREDENTIALS"]);
 // const projectConfig = config["FIREBASE_CONFIG"];
 

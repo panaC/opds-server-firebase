@@ -21,7 +21,7 @@
   "include": [
     "src",
     "test",
-    "config.json"
+    "test/config.json"
   ],
   "exclude": [
     "node_modules"
