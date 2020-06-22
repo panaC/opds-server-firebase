@@ -9,7 +9,7 @@ initGlobalConverters_SHARED();
 
 export const webpubFonction = async (req: functions.https.Request, res: functions.Response<any>) => {
 
-    res = res.set('Access-Control-Allow-Origin', '*')
+    res.set('Access-Control-Allow-Origin', '*')
     const send = response(res);
 
     try {
