@@ -42,7 +42,7 @@ export const handleWebpub = async (
 
     try {
         const publication = await callBack(publicationParsed);
-        return send(200, "", TAJSON.stringify(publication));
+        return send(200, "", publication);
     } catch (e) {
 
         console.error(method, publicationParsed);
@@ -87,7 +87,7 @@ export const read = async (req: functions.https.Request, res: functions.Response
 
         try {
             const publication = await getPublicationInDb(id);
-            return send(200, "", TAJSON.stringify(publication));
+            return send(200, "", publication);
 
         } catch (e) {
 
@@ -101,7 +101,7 @@ export const read = async (req: functions.https.Request, res: functions.Response
 
         try {
             const publication = await getAllPublication();
-            return send(200, "", TAJSON.stringify(publication));
+            return send(200, "", publication);
 
         } catch (e) {
 
@@ -122,7 +122,7 @@ export const delete_ = async (req: functions.https.Request, res: functions.Respo
         
         try {
             const publication = await deletePublicationInDb(id);
-            return send(200, "", TAJSON.stringify(publication));
+            return send(200, "", publication);
 
         } catch (e) {
 

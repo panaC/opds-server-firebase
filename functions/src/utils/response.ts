@@ -6,7 +6,7 @@ export const response = (res: functions.Response) =>
 
         res
             .status(status)
-            .send(
+            .json(
                 status !== 200 ? {
                     error,
                     data,

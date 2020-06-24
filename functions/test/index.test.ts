@@ -1,4 +1,5 @@
 
+import "mocha";
 import { Publication as R2Publication } from "r2-shared-js/dist/es8-es2017/src/models/publication";
 // import * as functions from "firebase-functions";
 import * as testFactory from 'firebase-functions-test';

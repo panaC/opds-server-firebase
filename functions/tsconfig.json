@@ -20,8 +20,7 @@
   },
   "include": [
     "src",
-    "test",
-    "test/config.json"
+    "test"
   ],
   "exclude": [
     "node_modules"

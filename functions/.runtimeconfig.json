@@ -1,0 +1,9 @@
+{
+  "server": {
+    "name": "opds-server",
+    "path": "",
+    "protocol": "https",
+    "domain": "my-domain",
+    "port": "80"
+  }
+}
