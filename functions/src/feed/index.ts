@@ -1,24 +1,22 @@
 import * as functions from "firebase-functions";
-// import { createFeed } from "./feed.service";
-import { TaJsonSerialize } from "r2-lcp-js/dist/es8-es2017/src/serializable";
-import { createFeed } from "./feed.service";
-// import * as admin from "firebase-admin";
-
-
+import { findAndReturnFeed, searchRequest } from "./controller";
 
 export const sync = functions.firestore.document("publication/{id}").onWrite(
     (change, context) => {
 
         // generate the new feed id db
 
-
     }
 );
 
 export const feedFn = async (req: functions.https.Request, res: functions.Response<any>) => {
 
-    const feed = await createFeed();
-    const ser = TaJsonSerialize(feed);
+    if (req.path || req.query) {
+        
+        // handle path and query params here
+        return await searchRequest(req, res);
+    } else {
+        return await findAndReturnFeed(req, res);
+    }
 
-    res.status(200).json(ser);
 }

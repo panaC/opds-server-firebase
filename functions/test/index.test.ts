@@ -15,7 +15,7 @@ import { HttpsFunction } from 'firebase-functions';
 import { exit } from 'process';
 import { JSON as TAJSON } from "ta-json-x";
 import { TaJsonDeserialize } from "r2-lcp-js/dist/es8-es2017/src/serializable";
-import { IWebpubDb } from "../src/webpub/interface/webpubDb.interface";
+import { IWebpubDb } from "../src/db/interface/webpub.interface";
 
 let db: FirebaseFirestore.CollectionReference<IWebpubDb>;
 const publication = {

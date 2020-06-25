@@ -1,7 +1,7 @@
 import { Publication as R2Publication } from "r2-shared-js/dist/es8-es2017/src/models/publication";
-import { webpubDb } from "./db";
+import { webpubDb } from "../db/webpub";
 import { TaJsonSerialize } from "r2-lcp-js/dist/es8-es2017/src/serializable";
-import { IWebpubDb } from "./interface/webpubDb.interface";
+import { IWebpubDb } from "../db/interface/webpub.interface";
 import { nanoid } from "nanoid";
 
 export const savePublicationInDb = async (publication: R2Publication): Promise<IWebpubDb["publication"]> => {

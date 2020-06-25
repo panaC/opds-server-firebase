@@ -6,7 +6,7 @@ import { response } from "../utils/response"
 import { savePublicationInDb, getPublicationInDb, getAllPublication, updatePublicationInDb, deletePublicationInDb } from "./service";
 import { Publication as R2Publication } from "r2-shared-js/dist/es8-es2017/src/models/publication";
 import { JSON as TAJSON } from "ta-json-x";
-import { IWebpubDb } from "./interface/webpubDb.interface";
+import { IWebpubDb } from "../db/interface/webpub.interface";
 
 export const handleWebpub = async (
     req: functions.https.Request,

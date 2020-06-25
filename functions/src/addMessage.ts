@@ -10,6 +10,8 @@ export const addMessage = functions.https.onRequest(async (req, res) => {
 
   console.log("method:" , req.method);
   console.log("env:", process.env);
+  console.log("path", req.path);
+  
 
   // Push the new message into Cloud Firestore using the Firebase Admin SDK.
   const writeResult = await admin
