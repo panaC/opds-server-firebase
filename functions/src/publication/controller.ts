@@ -1,43 +1,43 @@
 import * as functions from "firebase-functions";
 import { plainToClass } from "class-transformer";
-import { WebpubDto } from "./dto/webpub.dto";
+import { PublicationDto } from "./dto/publication.dto";
 import { validateOrReject } from "class-validator";
 import { response } from "../utils/response"
 import { savePublicationInDb, getPublicationInDb, getAllPublication, updatePublicationInDb, deletePublicationInDb } from "./service";
-import { Publication as R2Publication } from "r2-shared-js/dist/es8-es2017/src/models/publication";
 import { JSON as TAJSON } from "ta-json-x";
-import { IWebpubDb } from "../db/interface/webpub.interface";
+import { IPublicationDb } from "../db/interface/publication.interface";
+import { OPDSPublication } from "r2-opds-js/dist/es8-es2017/src/opds/opds2/opds2-publication";
 
-export const handleWebpub = async (
+export const handlePublication = async (
     req: functions.https.Request,
     res: functions.Response<any>,
-    callBack: (publication: R2Publication) => Promise<IWebpubDb["publication"]>,
+    callBack: (publication: OPDSPublication) => Promise<IPublicationDb["publication"]>,
     method: string
 ) => {
     const send = response(res);
-    const webpubStringified = req.body["webpub"];
+    const pubStringified = req.body["publication"];
 
-    let webpubParsed: Object;
-    let publicationParsed: R2Publication;
+    let publicationParsedWithJSON: Object;
+    let publicationParsed: OPDSPublication;
     try {
-        webpubParsed = JSON.parse(webpubStringified);
-        publicationParsed = TAJSON.parse(webpubStringified, R2Publication);
+        publicationParsedWithJSON = JSON.parse(pubStringified);
+        publicationParsed = TAJSON.parse(pubStringified, OPDSPublication);
     } catch (e) {
 
         console.error("webpub parsing error");
         console.error(e);
-        return send(400, "the value of 'webpub' key is not a json object");
+        return send(400, "the value of 'publication' key is not a json object");
     }
 
     try {
-        const webpubClass = plainToClass(WebpubDto, webpubParsed);
-        await validateOrReject(webpubClass);
+        const pubClass = plainToClass(PublicationDto, publicationParsedWithJSON);
+        await validateOrReject(pubClass);
 
     } catch (e) {
 
-        console.error("webpub not valid");
+        console.error("publication not valid");
         console.error(e);
-        return send(400, "readium web publication not valid", e instanceof Error ? e.toString() : e);
+        return send(400, "OPDSPublication not valid", e instanceof Error ? e.toString() : e);
     }
 
     try {
@@ -47,13 +47,13 @@ export const handleWebpub = async (
 
         console.error(method, publicationParsed);
         console.error(e);
-        return send(500, "Error to " + method + " the webpub in DB", e.toString());
+        return send(500, "Error to " + method + " the publication in DB", e.toString());
     }
 }
 
 export const create = async (req: functions.https.Request, res: functions.Response<any>) => {
 
-    return await handleWebpub(req, res, async (publication) => {
+    return await handlePublication(req, res, async (publication) => {
         return await savePublicationInDb(publication);
     }, "save");
 }
@@ -64,7 +64,7 @@ export const update = async (req: functions.https.Request, res: functions.Respon
     const id = req.query["id"];
 
     if (typeof id === "string" && id) {
-        return await handleWebpub(req, res, async (publication) => {
+        return await handlePublication(req, res, async (publication) => {
             return await updatePublicationInDb(id, publication);
         }, "update");
     } else {
@@ -93,7 +93,7 @@ export const read = async (req: functions.https.Request, res: functions.Response
 
             console.error("getPublicationWithId");
             console.error(e);
-            return send(500, "Error to get the webpub from DB", e.toString());
+            return send(500, "Error to get the publication from DB", e.toString());
 
         }
 
@@ -107,7 +107,7 @@ export const read = async (req: functions.https.Request, res: functions.Response
 
             console.error("getAllPublication");
             console.error(e);
-            return send(500, "Error to get all webpub from DB", e.toString());
+            return send(500, "Error to get all publication from DB", e.toString());
 
         }
     }
@@ -128,7 +128,7 @@ export const delete_ = async (req: functions.https.Request, res: functions.Respo
 
             console.error("deletePublicationInDb");
             console.error(e);
-            return send(500, "Error to delete the webpub from DB", e.toString());
+            return send(500, "Error to delete the publication from DB", e.toString());
 
         }
     } else {

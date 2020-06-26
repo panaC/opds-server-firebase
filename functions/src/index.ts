@@ -13,12 +13,15 @@ initGlobalConverters_SHARED();
 import { webpubFonction } from "./webpub";
 import { feedFn } from "./feed";
 import { addMessage} from "./addMessage";
+import { publicationFonction } from "./publication";
 
 const webpub = https.onRequest(webpubFonction);
+const publication = https.onRequest(publicationFonction);
 const feed = https.onRequest(feedFn);
 
 export {
     addMessage,
     webpub,
+    publication,
     feed,
 };

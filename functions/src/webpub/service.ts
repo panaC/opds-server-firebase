@@ -16,7 +16,7 @@ export const savePublicationInDb = async (publication: R2Publication): Promise<I
     
     const document = await webpubDb.doc(pubId).get();
     if (document.exists) {
-        throw new Error("publication already exists");
+        throw new Error("webpub already exists");
     } else {
         await webpubDb.doc(pubId).set(doc);
     }
@@ -31,7 +31,7 @@ export const getPublicationInDb = async (id: string): Promise<IWebpubDb["publica
     if (publication) {
         return publication
     } else {
-        throw new Error("publication not found");
+        throw new Error("webpub not found");
     }
 }
 
@@ -58,7 +58,7 @@ export const updatePublicationInDb = async (id: string, publication: R2Publicati
 
         return doc.publication;
     } else {
-        throw new Error("publication not found");
+        throw new Error("webpub not found");
     }
 }
 
@@ -72,6 +72,6 @@ export const deletePublicationInDb = async (id: string): Promise<IWebpubDb["publ
 
         return {};
     } else {
-        throw new Error("publication not found");
+        throw new Error("webpub not found");
     }
 }
