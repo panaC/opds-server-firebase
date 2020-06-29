@@ -15,7 +15,9 @@ import {
     getMostDownloadedPublicationFromDb, getMostRecentPublicationFromDb, getPromotePublicationFromDb,
     getSubjectPublicationFromDb,
 } from "./db/select";
-import { queryToPath, TQuery } from "./service";
+import { queryToPath } from "./service";
+import { IParsedQuery } from "./query.type";
+import { JsonMap } from "r2-lcp-js/dist/es8-es2017/src/serializable";
 
 const createLink = (
     href: string, title?: string,
@@ -41,7 +43,7 @@ const createLink = (
 const createGroup = (
     pub: OPDSPublication[],
     ln: OPDSLink,
-) => {
+    ) => {
     const group = new OPDSGroup();
     group.Metadata = new OPDSMetadata();
     group.Metadata.Title = ln.Title;
@@ -55,7 +57,7 @@ const createGroup = (
 
 export const createFeed = async (
     publication: OPDSPublication[],
-    query: TQuery,
+    query: IParsedQuery,
     title: string = config().server.name || "OPDS-SERVER",
 ): Promise<OPDSFeed> => {
 
@@ -63,6 +65,7 @@ export const createFeed = async (
 
     opds.Metadata = new OPDSMetadata();
     opds.Metadata.Title = title;
+    opds.Metadata.AdditionalJSON = {query: query as JsonMap};
 
     if (!publication) {
         opds.AddPagination(0, 0, 1, "", "", "", "");
@@ -72,13 +75,7 @@ export const createFeed = async (
         let firstLink: string = "";
         let lastLink: string = "";
 
-        // TODO move the query parsing before calling this function
-        const page = (() => {
-            const a = query[queryAllowed.page];
-            const b = parseInt(a, 10);
-            return isNaN(b) || b < 1 ? 1 : b;
-        })();
-
+        const page = query.page || 1;
         const nbPages = Math.ceil(publication.length / PUBLICATION_NUMBER_LIMIT);
 
         if (page < nbPages) {
@@ -112,7 +109,7 @@ export const createFeed = async (
     opds.AddNavigation("All publications", hrefFn(queryToPath(query, { [queryAllowed.number]: "*" })), "", LINK_TYPE);
     opds.AddNavigation("Are you curious ?", hrefFn(queryToPath(query, { [queryAllowed.number]: "10" })), "", LINK_TYPE);
 
-    if (!query[queryAllowed.language]) {
+    if (!query.language) {
         const languages = await distinctLanguage();
         languages.forEach((lang) => {
 
@@ -120,7 +117,7 @@ export const createFeed = async (
             opds.AddFacet(ln, lang);
         });
     }
-    if (!query[queryAllowed.subject]) {
+    if (!query.subject) {
         const subjects = await distinctSubject();
         for await (const sub of subjects) {
 

@@ -11,7 +11,7 @@ initGlobalConverters_GENERIC();
 initGlobalConverters_SHARED();
 
 import { webpubFonction } from "./webpub";
-import { feedFn } from "./feed";
+import { feedFn, sync } from "./feed";
 import { addMessage} from "./addMessage";
 import { publicationFonction } from "./publication";
 
@@ -20,6 +20,7 @@ const publication = https.onRequest(publicationFonction);
 const feed = https.onRequest(feedFn);
 
 export {
+    sync,
     addMessage,
     webpub,
     publication,

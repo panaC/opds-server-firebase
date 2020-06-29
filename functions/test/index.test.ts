@@ -2,8 +2,8 @@
 import "mocha";
 import { Publication as R2Publication } from "r2-shared-js/dist/es8-es2017/src/models/publication";
 // import * as functions from "firebase-functions";
-import * as testFactory from 'firebase-functions-test';
-import * as chai from "chai";
+import testFactory from 'firebase-functions-test';
+import chai from "chai";
 const assert = chai.assert;
 
 import * as config from "./config.json";

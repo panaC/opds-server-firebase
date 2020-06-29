@@ -3,9 +3,10 @@ import { IFeedDoc } from "../db/interface/feed.interface";
 import { createHomeFeed } from "./createFeed";
 import { TaJsonSerialize } from "r2-lcp-js/dist/es8-es2017/src/serializable";
 import * as qs from "qs";
-import { OPDSFeed } from "r2-opds-js/dist/es8-es2017/src/opds/opds2/opds2";
+import { TQuery, IParsedQuery, TQueryAllowed } from "./query.type";
+import { queryAllowed } from "./constant";
+// import { OPDSFeed } from "r2-opds-js/dist/es8-es2017/src/opds/opds2/opds2";
 
-export type TQuery = { [key: string]:string };
 export const pathToQuery = (path: string): TQuery => {
 
     const split = path.split("/");
@@ -24,24 +25,28 @@ export const queryToQuery =
                 {},
             );
 
-export const queryToPath = (query: TQuery, mergeToQuery?: TQuery): string =>
+export const queryToPath = (query: IParsedQuery, mergeToQuery?: IParsedQuery): string =>
     Object.entries(
         mergeQuery(query, mergeToQuery)
     )
         .reduce(
-            (pv, [key, value]) => pv + key + "/" + value,
+            (pv, [key, value]) => pv + key + "/" + value + "/",
             "/",
         );
 
-export const mergeQuery = (a: TQuery, b?: TQuery) =>
+export const mergeQuery = <T extends IParsedQuery | TQuery>(a: T, b?: T): T=>
     a && b ? { ...a, ...b } : a;
 
-export const updateFeed = async () => {
+export const createFeed = async () => {
     const opdsFeed = await createHomeFeed();
     const feed = TaJsonSerialize(opdsFeed);
-    await feedDoc.update(feed);
 
     return feed;
+}
+
+export const updateFeed = async () => {
+    const feed = await createFeed();
+    await feedDoc.update(feed);
 }
 
 export const getFeed = async () => {
@@ -49,8 +54,62 @@ export const getFeed = async () => {
 
     const doc = await feedDoc.get();
     if (doc.exists) {
+        console.log("feed exists return feed");
+        
         return doc.data() as IFeedDoc;
     } else {
-        return await updateFeed();
+        console.log("feed doesn't exists create it");
+        
+        const feed = await createFeed();
+        await feedDoc.set(feed);
+
+        return feed;
     }
 }
+
+export const parseQuery = (query: TQuery): IParsedQuery => {
+
+    let o: IParsedQuery = {};
+
+    Object.entries(query).forEach((q) => {
+        const [key, value] = q as [TQueryAllowed, string | undefined]
+
+        switch (key) {
+
+            case queryAllowed.author:
+            case queryAllowed.group:
+            case queryAllowed.language:
+            case queryAllowed.publisher:
+            case queryAllowed.query:
+            case queryAllowed.title:
+            case queryAllowed.subject:
+
+                if (value && typeof value === "string") {
+                    // @ts-ignore
+                    o[key] = value;
+                }
+
+                break;
+        
+            case queryAllowed.page:
+            case queryAllowed.number:
+
+                if (value && typeof value === "string") {
+                    
+                    const a = value;
+                    const b = parseInt(a, 10);
+                    const c = isNaN(b) || b < 1 ? 1 : b;
+                    // @ts-ignore
+                    o[key] = c;
+                }
+
+                break;
+
+            default:
+                break;
+        }
+    })
+
+    return o;
+
+};

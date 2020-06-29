@@ -7,7 +7,7 @@ import { IsNotEmpty
   , IsISO8601, 
   } from 'class-validator';
 import { Expose, Transform, Type } from 'class-transformer';
-import * as moment from "moment";
+import moment from "moment";
 
 import "reflect-metadata";
 

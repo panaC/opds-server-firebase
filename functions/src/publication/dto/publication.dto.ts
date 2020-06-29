@@ -18,11 +18,6 @@ export class PublicationDto {
   links!: LinksDto[];
 
   @Type(() => LinksDto)
-  @IsNotEmpty()
-  @ValidateNested()
-  readonly readingOrder!: LinksDto[];
-
-  @Type(() => LinksDto)
   @IsOptional()
   @ValidateNested()
   readonly resources!: LinksDto[];
