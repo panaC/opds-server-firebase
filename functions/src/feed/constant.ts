@@ -12,7 +12,7 @@ export const selfHref = new URL("/feed", serverHref);
 export const selfHrefClone = () => new URL("", selfHref);
 
 
-export const query = {
+export const queryAllowed = {
     "query": "query",
     "title": "title",
     "author": "author",
@@ -24,7 +24,7 @@ export const query = {
     "group": "group",
 };
 
-export const groups = {
+export const groupsAllowed = {
     "mostRecent": "mostRecent",
     "mostDownloaded": "mostDownloaded",
 }
@@ -40,3 +40,4 @@ export const isAGoodArray = (a: Array<any>) => {
 }
 
 export const PUBLICATION_NUMBER_LIMIT = config().publicationLimit || 50;
+

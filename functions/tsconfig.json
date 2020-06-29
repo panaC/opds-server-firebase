@@ -16,7 +16,9 @@
     "strict": true,
     "target": "es2018",
     "experimentalDecorators": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "strictNullChecks": true
   },
   "include": [
     "src",
