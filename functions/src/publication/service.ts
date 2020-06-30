@@ -1,15 +1,15 @@
 import { OPDSPublication } from "r2-opds-js/dist/es8-es2017/src/opds/opds2/opds2-publication";
-import { TaJsonSerialize } from "r2-lcp-js/dist/es8-es2017/src/serializable";
 import { IPublicationDb } from "../db/interface/publication.interface";
 import { nanoid } from "nanoid";
 import { publicationDb } from "../db/publication";
+import { TaJsonSerialize } from "r2-lcp-js/dist/es8-es2017/src/serializable";
 
 export const savePublicationInDb = async (publication: OPDSPublication): Promise<IPublicationDb["publication"]> => {
     
     const pubId = publication.Metadata.Identifier = publication.Metadata.Identifier || nanoid();
     const doc: IPublicationDb = {
         popularityCounter: 0,
-        publication: TaJsonSerialize(publication),
+        publication: publication,
         createTimestamp: Date.now(),
         modifiedTimestamp: Date.now(),
     };
@@ -51,7 +51,10 @@ export const updatePublicationInDb = async (id: string, publication: OPDSPublica
             ...data,
             popularityCounter: typeof data.popularityCounter === "number" ? data.popularityCounter + 1 : 0,
             modifiedTimestamp: Date.now(),
-            publication: TaJsonSerialize(publication),
+            // firestore doesn't call 'toFirestore' converter on update request !!
+            // need to force cast to any
+            // TODO how to improve it ?
+            publication: TaJsonSerialize(publication) as any,
         }
 
         await ref.update(doc);
@@ -62,7 +65,7 @@ export const updatePublicationInDb = async (id: string, publication: OPDSPublica
     }
 }
 
-export const deletePublicationInDb = async (id: string): Promise<IPublicationDb["publication"]> => {
+export const deletePublicationInDb = async (id: string) => {
 
     const ref = publicationDb.doc(id);
     const document = await ref.get();
@@ -70,7 +73,6 @@ export const deletePublicationInDb = async (id: string): Promise<IPublicationDb[
 
         await ref.delete();
 
-        return {};
     } else {
         throw new Error("publication not found");
     }

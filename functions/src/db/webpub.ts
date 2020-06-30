@@ -1,4 +1,30 @@
 import { db } from "./db";
 import { IWebpubDb } from "./interface/webpub.interface";
+import { Publication as R2Publication } from "r2-shared-js/dist/es8-es2017/src/models/publication";
+import { TaJsonSerialize, TaJsonDeserialize } from "r2-lcp-js/dist/es8-es2017/src/serializable";
 
-export const webpubDb = db.collection("webpub") as FirebaseFirestore.CollectionReference<IWebpubDb>;
+const webpubConverter: FirebaseFirestore.FirestoreDataConverter<IWebpubDb> = {
+    toFirestore: (obj) => {
+        // update fonction doesn't call this function , why !!?!!
+        // wherase set function works
+        // and it's create a type error on publication
+
+        return ({
+            ...obj,
+
+            publication: TaJsonSerialize(obj.publication),
+            modifiedTimestamp: Date.now(),
+        })
+    },
+
+    fromFirestore: (obj) => ({
+        publication: TaJsonDeserialize(obj.publication, R2Publication),
+        modifiedTimestamp: obj.modifiedTimestamp,
+        createTimestamp: obj.createTimestamp,
+        popularityCounter: obj.popularityCounter,
+    })
+}
+
+export const webpubDb = db
+    .collection("webpub")
+    .withConverter(webpubConverter) as FirebaseFirestore.CollectionReference<IWebpubDb>;

@@ -1,7 +1,7 @@
-import { JsonMap } from "r2-lcp-js/dist/es8-es2017/src/serializable";
+import { OPDSPublication } from "r2-opds-js/dist/es8-es2017/src/opds/opds2/opds2-publication";
 
 export interface IPublicationDb {
-    publication: JsonMap;
+    publication: OPDSPublication;
     popularityCounter: number;
     createTimestamp: number;
     modifiedTimestamp: number;

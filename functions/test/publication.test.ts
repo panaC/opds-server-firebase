@@ -1,26 +1,29 @@
 
 import "mocha";
-import { Publication as R2Publication } from "r2-shared-js/dist/es8-es2017/src/models/publication";
-// import * as functions from "firebase-functions";
-import testFactory from 'firebase-functions-test';
+
 import chai from "chai";
-const assert = chai.assert;
+// const projectConfig = config["FIREBASE_CONFIG"];
+// import * as admin from 'firebase-admin';
+import { HttpsFunction } from "firebase-functions";
+// import * as functions from "firebase-functions";
+import testFactory from "firebase-functions-test";
+// import { exit } from "process";
+import { TaJsonDeserialize } from "r2-lcp-js/dist/es8-es2017/src/serializable";
+import { JSON as TAJSON } from "ta-json-x";
 
 import * as config from "./config.json";
+import { OPDSPublication } from "r2-opds-js/dist/es8-es2017/src/opds/opds2/opds2-publication";
+import { publicationDb } from "../src/db/publication";
+import { IPublicationDb } from "../src/db/interface/publication.interface";
+
+const assert = chai.assert;
+
+export const normalize = (o: any) => TaJsonDeserialize(o, OPDSPublication);
+
 const test = testFactory(config["FIREBASE_CONFIG"], config["GOOGLE_APPLICATION_CREDENTIALS"]);
-// const projectConfig = config["FIREBASE_CONFIG"];
+let db: FirebaseFirestore.CollectionReference<IPublicationDb>;
 
-import * as admin from 'firebase-admin';
-import { HttpsFunction } from 'firebase-functions';
-import { exit } from 'process';
-import { JSON as TAJSON } from "ta-json-x";
-import { TaJsonDeserialize } from "r2-lcp-js/dist/es8-es2017/src/serializable";
-import { IWebpubDb } from "../src/db/interface/webpub.interface";
-
-let db: FirebaseFirestore.CollectionReference<IWebpubDb>;
 const publication = {
-  "@context": "https://readium.org/webpub-manifest/context.jsonld",
-
   "metadata": {
     "@type": "http://schema.org/Book",
     "title": "Moby-Dick",
@@ -29,65 +32,54 @@ const publication = {
     "language": "en",
     "modified": "2015-09-29T17:00:00Z"
   },
-
   "links": [
-    { "rel": "self", "href": "https://example.com/manifest.json", "type": "application/webpub+json" },
-    { "rel": "alternate", "href": "https://example.com/publication.epub", "type": "application/epub+zip" },
-    { "rel": "search", "href": "https://example.com/search{?query}", "type": "text/html", "templated": true }
+    {"rel": "self", "href": "http://example.org/manifest.json", "type": "application/webpub+json"}
   ],
-
-  "readingOrder": [
-    { "href": "https://example.com/c001.html", "type": "text/html", "title": "Chapter 1" },
-    { "href": "https://example.com/c002.html", "type": "text/html", "title": "Chapter 2" }
-  ],
-
-  "resources": [
-    { "rel": "cover", "href": "https://example.com/cover.jpg", "type": "image/jpeg", "height": 600, "width": 400 },
-    { "href": "https://example.com/style.css", "type": "text/css" },
-    { "href": "https://example.com/whale.jpg", "type": "image/jpeg" },
-    { "href": "https://example.com/boat.svg", "type": "image/svg+xml" },
-    { "href": "https://example.com/notes.html", "type": "text/html" }
+  "images": [
+    {"href": "http://example.org/cover.jpg", "type": "image/jpeg", "height": 1400, "width": 800},
+    {"href": "http://example.org/cover-small.jpg", "type": "image/jpeg", "height": 700, "width": 400},
+    {"href": "http://example.org/cover.svg", "type": "image/svg+xml"}
   ]
-};
+}
 
-describe("functions", () => {
+describe("/publication functions", () => {
 
-  let myFonctions: { webpub: HttpsFunction };
+  let myFonctions: { publication: HttpsFunction };
   before(() => {
     // Require index.js and save the exports inside a namespace called myFunctions.
     // This includes our cloud functions, which can now be accessed at myFunctions.makeUppercase
     // and myFunctions.addMessage
     myFonctions = require('../src/index');
 
-    db = admin.firestore().collection("publication") as FirebaseFirestore.CollectionReference<IWebpubDb>;
+    db = publicationDb;
   });
 
   after(() => {
     // Do cleanup tasks.
     test.cleanup();
     // Reset the database.
-    db.get().then((v) => Promise.all(v.docs.map((d) => db.doc(d.id).delete())).then(() => exit()));
+    // db.get().then((v) => Promise.all(v.docs.map((d) => db.doc(d.id).delete())).then(() => exit()));
   });
 
   describe("POST", () => {
 
     let status: number;
-    let body: string = "{}";
+    let body: any;
     // A fake request object, with req.query.text set to 'input'
     const req: any = { body: { publication: TAJSON.stringify(publication) }, method: "POST" };
     // A fake response object, with a stubbed redirect function which does some assertions
     const res: any = {
       set: (...arg: any) => {
-        console.log("set", ...arg);
+        // console.log("set", ...arg);
         return res;
       },
       status: (code: number) => {
-        console.log("code", code);
+        // console.log("code", code);
         status = code;
         return res;
       },
-      send: (_body: any) => {
-        console.log("body", _body);
+      json: (_body: any) => {
+        // console.log("body", _body);
         body = _body;
         return res;
       }
@@ -95,7 +87,7 @@ describe("functions", () => {
 
     it("run POST", async () => {
 
-      await myFonctions.webpub(req, res);
+      await myFonctions.publication(req, res);
     });
 
     it("code 200", () => {
@@ -103,13 +95,14 @@ describe("functions", () => {
     });
 
     it("body returns publication", () => {
-      assert.deepEqual(TAJSON.parse(body, R2Publication), TaJsonDeserialize(publication, R2Publication));
+      assert.deepEqual(normalize(body), normalize(publication));
     });
 
     it("publication in DB", async () => {
 
       const dataFromDb = await (await db.doc(publication.metadata.identifier).get()).data()?.publication;
-      assert.deepEqual(TaJsonDeserialize(dataFromDb, R2Publication), TaJsonDeserialize(publication, R2Publication));
+
+      assert.deepEqual(dataFromDb, normalize(publication));
 
     });
 
@@ -124,16 +117,16 @@ describe("functions", () => {
     // A fake response object, with a stubbed redirect function which does some assertions
     const res: any = {
       set: (...arg: any) => {
-        console.log("set", ...arg);
+        // console.log("set", ...arg);
         return res;
       },
       status: (code: number) => {
-        console.log("code", code);
+        // console.log("code", code);
         status = code;
         return res;
       },
-      send: (_body: any) => {
-        console.log("body", _body);
+      json: (_body: any) => {
+        // console.log("body", _body);
         body = _body;
         return res;
       }
@@ -141,7 +134,7 @@ describe("functions", () => {
 
     it("run GET", async () => {
 
-      await myFonctions.webpub(req, res);
+      await myFonctions.publication(req, res);
     });
 
     it("code 200", () => {
@@ -149,7 +142,7 @@ describe("functions", () => {
     });
 
     it("body returns publication", () => {
-      assert.deepEqual(TAJSON.parse(body, R2Publication), TaJsonDeserialize(publication, R2Publication));
+      assert.deepEqual(normalize(body), normalize(publication));
     });
 
   });
@@ -163,16 +156,16 @@ describe("functions", () => {
     // A fake response object, with a stubbed redirect function which does some assertions
     const res: any = {
       set: (...arg: any) => {
-        console.log("set", ...arg);
+        // console.log("set", ...arg);
         return res;
       },
       status: (code: number) => {
-        console.log("code", code);
+        // console.log("code", code);
         status = code;
         return res;
       },
-      send: (_body: any) => {
-        console.log("body", _body);
+      json: (_body: any) => {
+        // console.log("body", _body);
         body = _body;
         return res;
       }
@@ -180,7 +173,7 @@ describe("functions", () => {
 
     it("run UPDATE", async () => {
 
-      await myFonctions.webpub(req, res);
+      await myFonctions.publication(req, res);
     });
 
     it("code 200", () => {
@@ -188,13 +181,13 @@ describe("functions", () => {
     });
 
     it("body returns publication", () => {
-      assert.deepEqual(TAJSON.parse(body, R2Publication), TaJsonDeserialize(publication, R2Publication));
+      assert.deepEqual(normalize(body), normalize(publication));
     });
 
     it("publication in DB", async () => {
 
       const dataFromDb = await (await db.doc(publication.metadata.identifier).get()).data()?.publication;
-      assert.deepEqual(TaJsonDeserialize(dataFromDb, R2Publication), TaJsonDeserialize(publication, R2Publication));
+      assert.deepEqual(dataFromDb, normalize(publication));
 
     });
 
@@ -209,16 +202,16 @@ describe("functions", () => {
     // A fake response object, with a stubbed redirect function which does some assertions
     const res: any = {
       set: (...arg: any) => {
-        console.log("set", ...arg);
+        // console.log("set", ...arg);
         return res;
       },
       status: (code: number) => {
-        console.log("code", code);
+        // console.log("code", code);
         status = code;
         return res;
       },
-      send: (_body: any) => {
-        console.log("body", _body);
+      json: (_body: any) => {
+        // console.log("body", _body);
         body = _body;
         return res;
       }
@@ -226,7 +219,7 @@ describe("functions", () => {
 
     it("run DELETE", async () => {
 
-      await myFonctions.webpub(req, res);
+      await myFonctions.publication(req, res);
     });
 
     it("code 200", () => {
@@ -234,7 +227,7 @@ describe("functions", () => {
     });
 
     it("body returns publication", () => {
-      assert.deepEqual(TAJSON.parse(body, R2Publication), TaJsonDeserialize({}, R2Publication));
+      assert.deepEqual(body, undefined);
     });
 
     it("publication in DB", async () => {

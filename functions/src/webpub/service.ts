@@ -1,15 +1,15 @@
 import { Publication as R2Publication } from "r2-shared-js/dist/es8-es2017/src/models/publication";
 import { webpubDb } from "../db/webpub";
-import { TaJsonSerialize } from "r2-lcp-js/dist/es8-es2017/src/serializable";
 import { IWebpubDb } from "../db/interface/webpub.interface";
 import { nanoid } from "nanoid";
+import { TaJsonSerialize } from "r2-lcp-js/dist/es8-es2017/src/serializable";
 
 export const savePublicationInDb = async (publication: R2Publication): Promise<IWebpubDb["publication"]> => {
     
     const pubId = publication.Metadata.Identifier = publication.Metadata.Identifier || nanoid();
     const doc: IWebpubDb = {
         popularityCounter: 0,
-        publication: TaJsonSerialize(publication),
+        publication: publication,
         createTimestamp: Date.now(),
         modifiedTimestamp: Date.now(),
     };
@@ -51,7 +51,10 @@ export const updatePublicationInDb = async (id: string, publication: R2Publicati
             ...data,
             popularityCounter: typeof data.popularityCounter === "number" ? data.popularityCounter + 1 : 0,
             modifiedTimestamp: Date.now(),
-            publication: TaJsonSerialize(publication),
+            // firestore doesn't call 'toFirestore' converter on update request !!
+            // need to force cast to any
+            // TODO how to improve it ?
+            publication: TaJsonSerialize(publication) as any,
         }
 
         await ref.update(doc);
@@ -62,7 +65,7 @@ export const updatePublicationInDb = async (id: string, publication: R2Publicati
     }
 }
 
-export const deletePublicationInDb = async (id: string): Promise<IWebpubDb["publication"]> => {
+export const deletePublicationInDb = async (id: string) => {
 
     const ref = webpubDb.doc(id);
     const document = await ref.get();
@@ -70,7 +73,6 @@ export const deletePublicationInDb = async (id: string): Promise<IWebpubDb["publ
 
         await ref.delete();
 
-        return {};
     } else {
         throw new Error("webpub not found");
     }

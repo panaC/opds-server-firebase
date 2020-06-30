@@ -7,6 +7,7 @@ import { savePublicationInDb, getPublicationInDb, getAllPublication, updatePubli
 import { Publication as R2Publication } from "r2-shared-js/dist/es8-es2017/src/models/publication";
 import { JSON as TAJSON } from "ta-json-x";
 import { IWebpubDb } from "../db/interface/webpub.interface";
+import { TaJsonSerialize } from "r2-lcp-js/dist/es8-es2017/src/serializable";
 
 export const handleWebpub = async (
     req: functions.https.Request,
@@ -42,7 +43,7 @@ export const handleWebpub = async (
 
     try {
         const publication = await callBack(publicationParsed);
-        return send(200, "", publication);
+        return send(200, "", TaJsonSerialize(publication));
     } catch (e) {
 
         console.error(method, publicationParsed);
@@ -87,7 +88,7 @@ export const read = async (req: functions.https.Request, res: functions.Response
 
         try {
             const publication = await getPublicationInDb(id);
-            return send(200, "", publication);
+            return send(200, "", TaJsonSerialize(publication));
 
         } catch (e) {
 
@@ -101,7 +102,7 @@ export const read = async (req: functions.https.Request, res: functions.Response
 
         try {
             const publication = await getAllPublication();
-            return send(200, "", publication);
+            return send(200, "", TaJsonSerialize(publication));
 
         } catch (e) {
 
@@ -121,8 +122,8 @@ export const delete_ = async (req: functions.https.Request, res: functions.Respo
     if (typeof id === "string" && id) {
         
         try {
-            const publication = await deletePublicationInDb(id);
-            return send(200, "", publication);
+            await deletePublicationInDb(id);
+            return send(200);
 
         } catch (e) {
 
@@ -135,5 +136,4 @@ export const delete_ = async (req: functions.https.Request, res: functions.Respo
 
         return send(400, "the value of 'id' key is not a string");
     }
-
 }

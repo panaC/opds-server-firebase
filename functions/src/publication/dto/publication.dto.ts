@@ -1,11 +1,12 @@
 
-import { IsNotEmpty, ValidateNested, IsOptional } from 'class-validator';
+import { IsNotEmpty, ValidateNested } from 'class-validator';
 import { MetadataDto } from './metadata.dto';
 import { LinksDto } from './links.dto';
 import { Type } from 'class-transformer';
 
 import "reflect-metadata";
 
+// https://drafts.opds.io/opds-2.0
 export class PublicationDto {
 
   @IsNotEmpty()
@@ -18,12 +19,50 @@ export class PublicationDto {
   links!: LinksDto[];
 
   @Type(() => LinksDto)
-  @IsOptional()
   @ValidateNested()
-  readonly resources!: LinksDto[];
+  navigation!: LinksDto[];
+
+  @Type(() => PublicationDto)
+  @ValidateNested()
+  publications!: PublicationDto[];
 
   @Type(() => LinksDto)
-  @IsOptional()
   @ValidateNested()
-  readonly toc!: LinksDto[];
+  images!: LinksDto[];
+
+  // https://drafts.opds.io/opds-2.0#14-facets
+  // not realy an publicationDto
+  // {
+  //   "facets": [
+  //     {
+  //       "metadata": {
+  //         "title": "Language"
+  //       },
+  //       "links": [
+  //         {
+  //           "href": "/fr", 
+  //           "type": "application/opds+json", 
+  //           "title": "French", 
+  //           "properties": { "numberOfItems": 10 }
+  //         },
+  //         {
+  //           "href": "/en", 
+  //           "type": "application/opds+json", 
+  //           "title": "English", 
+  //           "properties": { "numberOfItems": 40 }
+  //         },
+  //         {
+  //           "href": "/de", 
+  //           "type": "application/opds+json", 
+  //           "title": "German", 
+  //           "properties": { "numberOfItems": 6 }
+  //         }
+  //       ]
+  //     }
+  //   ]
+  // }
+  @Type(() => PublicationDto)
+  @ValidateNested()
+  groups!: PublicationDto[];
+
 }
