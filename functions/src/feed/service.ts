@@ -92,15 +92,25 @@ export const parseQuery = (query: TQuery): IParsedQuery => {
                 break;
         
             case queryAllowed.page:
-            case queryAllowed.number:
 
                 if (value && typeof value === "string") {
                     
                     const a = value;
                     const b = parseInt(a, 10);
                     const c = isNaN(b) || b < 1 ? 1 : b;
-                    // @ts-ignore
-                    o[key] = c;
+                    o.page = c;
+                }
+
+                break;
+
+            case queryAllowed.number:
+
+                if (value && typeof value === "string") {
+                    
+                    const a = value;
+                    const b = parseInt(a, 10);
+                    const c = isNaN(b) || b < 0 ? 0 : b;
+                    o.number = c;
                 }
 
                 break;

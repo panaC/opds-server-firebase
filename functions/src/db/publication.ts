@@ -21,4 +21,4 @@ const publicationConverter: FirebaseFirestore.FirestoreDataConverter<IPublicatio
 
 export const publicationDb = db
     .collection("publication")
-    .withConverter(publicationConverter) as FirebaseFirestore.CollectionReference<IPublicationDb>;
+    .withConverter(publicationConverter);

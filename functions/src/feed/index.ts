@@ -6,7 +6,6 @@ import { response } from "../utils/response";
 export const sync = functions.firestore.document("/publication/{id}").onWrite(
     async (change, context) => {
 
-        // works online but not offline in simulators
 
         // generate the new feed id db
         // TODO: need optimisation
