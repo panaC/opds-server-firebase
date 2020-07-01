@@ -1,16 +1,40 @@
 import { IParsedQuery } from "../query.type";
 import { OPDSPublication } from "r2-opds-js/dist/es8-es2017/src/opds/opds2/opds2-publication";
 import { publicationDb } from "../../db/publication";
-import { /*PUBLICATION_NUMBER_LIMIT,*/ groupsAllowed } from "../../constant";
+import { /*PUBLICATION_NUMBER_LIMIT,*/ groupsAllowed, algoliaEnabled } from "../../constant";
 import { IPublicationDb } from "../../db/interface/publication.interface";
+import { algoliaIndex } from "../../utils/algolia";
 
 export const searchPublication = async (query: IParsedQuery): Promise<OPDSPublication[]> => {
 
     let publication = new Array<OPDSPublication>();
 
+    const queryFromQuery = query.query;
+
+    try {
+        
+        if (queryFromQuery && algoliaEnabled) {
+            console.log("search with algolia", queryFromQuery);
+
+            const search = await algoliaIndex.search(queryFromQuery);
+            const hits = search.hits;
+
+            const pubPromise = hits
+                .map(async (o) => (await publicationDb.doc(o.objectID).get()).data()?.publication)
+
+            const pubNotFiltered = await Promise.all(pubPromise)
+            const pub = pubNotFiltered.filter((p) => p) as OPDSPublication[];
+
+            return pub;
+        }
+    } catch (e) {
+        console.log("error to search in algolia");
+        console.log(e);
+
+    }
+
     // const page = query.page || 1;
     const number = query.number || 0;
-    const queryFromQuery = query.query;
     const title = query.title;
     const author = query.author;
     const subject = query.subject;
@@ -19,8 +43,8 @@ export const searchPublication = async (query: IParsedQuery): Promise<OPDSPublic
     const group = query.group;
 
     // let dbQuery = publicationDb;
-        // .startAt((page - 1) * PUBLICATION_NUMBER_LIMIT)
-        // .endAt(page * PUBLICATION_NUMBER_LIMIT);
+    // .startAt((page - 1) * PUBLICATION_NUMBER_LIMIT)
+    // .endAt(page * PUBLICATION_NUMBER_LIMIT);
     let dbQuery = publicationDb as FirebaseFirestore.Query<IPublicationDb>;
     if (number) {
         dbQuery = dbQuery.limit(number);

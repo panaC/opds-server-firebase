@@ -2,8 +2,10 @@ import { OPDSPublication } from "r2-opds-js/dist/es8-es2017/src/opds/opds2/opds2
 import { IPublicationDb } from "../db/interface/publication.interface";
 import { nanoid } from "nanoid";
 import { publicationDb, publicationConverter } from "../db/publication";
-import { publicationHrefFn, LINK_TYPE } from "../constant";
+import { publicationHrefFn, LINK_TYPE, algoliaEnabled } from "../constant";
 import { OPDSLink } from "r2-opds-js/dist/es8-es2017/src/opds/opds2/opds2-link";
+import { algoliaIndex } from "../utils/algolia";
+import { TaJsonSerialize } from "r2-lcp-js/dist/es8-es2017/src/serializable";
 
 const addSelfLink = (publication: OPDSPublication, pubId: string) => {
         publication.Links = publication.Links.reduce(
@@ -28,6 +30,19 @@ export const savePublicationInDb = async (publication: OPDSPublication): Promise
         createTimestamp: Date.now(),
         modifiedTimestamp: Date.now(),
     };
+
+    if (algoliaEnabled) {
+
+        try {
+            const algoliaObject = TaJsonSerialize(publication.Metadata);
+            algoliaObject.objectID = publication.Metadata.Identifier;
+            await algoliaIndex.saveObject(algoliaObject);
+    
+        } catch (e) {
+            console.log("algolia save error", e);
+            
+        } 
+    }
 
     const document = await publicationDb.doc(pubId).get();
     if (document.exists) {
@@ -66,6 +81,19 @@ export const updatePublicationInDb = async (id: string, publication: OPDSPublica
 
         addSelfLink(publication, publication.Metadata.Identifier);
 
+        if (algoliaEnabled) {
+
+            try {
+                const algoliaObject = TaJsonSerialize(publication.Metadata);
+                algoliaObject.objectID = publication.Metadata.Identifier;
+                await algoliaIndex.saveObject(algoliaObject);
+    
+            } catch (e) {
+                console.log("algolia save error", e);
+    
+            }
+        }
+
         const doc: IPublicationDb = {
             ...data,
             popularityCounter: typeof data.popularityCounter === "number" ? data.popularityCounter + 1 : 0,
@@ -88,6 +116,11 @@ export const deletePublicationInDb = async (id: string) => {
     const ref = publicationDb.doc(id);
     const document = await ref.get();
     if (document.exists) {
+
+        if (algoliaEnabled) {
+
+            await algoliaIndex.deleteObject(id);
+        }
 
         await ref.delete();
 

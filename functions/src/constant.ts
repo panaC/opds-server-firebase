@@ -2,6 +2,8 @@
 import { config } from "firebase-functions";
 import { URL } from "url";
 
+export const algoliaEnabled = config().algolia.enabled === "true" ? true : false;
+
 const protocol = config().server.protocol;
 const port = config().server.port;
 const pathname = config().server.path;

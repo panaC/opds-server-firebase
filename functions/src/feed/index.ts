@@ -1,6 +1,6 @@
 import * as functions from "firebase-functions";
 import { findAndReturnFeed, searchRequest } from "./controller";
-import { updateFeed, setFeed } from "./service";
+import { updateFeed, setFeed, pathToQuery, queryToQuery, mergeQuery, parseQuery } from "./service";
 import { response } from "../utils/response";
 
 export const sync = functions.firestore.document("/publication/{id}").onWrite(
@@ -40,10 +40,14 @@ export const feedFn = async (req: functions.https.Request, res: functions.Respon
                 console.log("path", req.path);
                 console.log("query", req.query);
 
-                if (req.path !== "/" || Object.keys(req.query).length) {
+                const queryFromPath = pathToQuery(req.path);
+                const queryFromQuery = queryToQuery(req.query);
+                const queryRaw = mergeQuery(queryFromPath, queryFromQuery);
+                const query = parseQuery(queryRaw)
 
-                    // handle path and query params here
-                    return await searchRequest(req, res);
+                if (Object.keys(query).length) {
+
+                    return await searchRequest(query, res);
                 } else {
                     return await findAndReturnFeed(req, res);
 

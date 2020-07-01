@@ -15,6 +15,7 @@
   "main": "build/src/index.js",
   "dependencies": {
     "@types/mocha": "^7.0.2",
+    "algoliasearch": "^4.3.0",
     "class-transformer": "^0.2.3",
     "class-validator": "^0.12.2",
     "firebase-admin": "^8.10.0",
@@ -22,8 +23,8 @@
     "moment": "^2.26.0",
     "nanoid": "^3.1.10",
     "r2-lcp-js": "^1.0.27",
-    "r2-shared-js": "^1.0.36",
     "r2-opds-js": "^1.0.25",
+    "r2-shared-js": "^1.0.36",
     "reflect-metadata": "^0.1.13",
     "ta-json-x": "^2.5.2"
   },
