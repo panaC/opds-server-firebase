@@ -1,7 +1,7 @@
 import { IParsedQuery } from "../query.type";
 import { OPDSPublication } from "r2-opds-js/dist/es8-es2017/src/opds/opds2/opds2-publication";
 import { publicationDb } from "../../db/publication";
-import { /*PUBLICATION_NUMBER_LIMIT,*/ groupsAllowed, algoliaEnabled } from "../../constant";
+import { groupsAllowed, algoliaEnabled, PUBLICATION_NUMBER_LIMIT } from "../../constant";
 import { IPublicationDb } from "../../db/interface/publication.interface";
 import { algoliaIndex } from "../../utils/algolia";
 
@@ -20,6 +20,7 @@ export const searchPublication = async (query: IParsedQuery): Promise<OPDSPublic
             const hits = search.hits;
 
             const pubPromise = hits
+                .slice(0, PUBLICATION_NUMBER_LIMIT)
                 .map(async (o) => (await publicationDb.doc(o.objectID).get()).data()?.publication)
 
             const pubNotFiltered = await Promise.all(pubPromise)
@@ -42,9 +43,11 @@ export const searchPublication = async (query: IParsedQuery): Promise<OPDSPublic
     const language = query.language;
     const group = query.group;
 
+    // FIX IT 
     // let dbQuery = publicationDb;
     // .startAt((page - 1) * PUBLICATION_NUMBER_LIMIT)
     // .endAt(page * PUBLICATION_NUMBER_LIMIT);
+
     let dbQuery = publicationDb as FirebaseFirestore.Query<IPublicationDb>;
     if (number) {
         dbQuery = dbQuery.limit(number);
