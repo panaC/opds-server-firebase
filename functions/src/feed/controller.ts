@@ -25,7 +25,7 @@ export const searchRequest = async (req: functions.https.Request, res: functions
         send(200, "", feed);
 
     } catch (e) {
-        send(500, "error", e.toString());
+        send(500, e.toString(), e.stack);
     }
 
 };

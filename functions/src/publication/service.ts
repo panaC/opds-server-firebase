@@ -1,8 +1,7 @@
 import { OPDSPublication } from "r2-opds-js/dist/es8-es2017/src/opds/opds2/opds2-publication";
 import { IPublicationDb } from "../db/interface/publication.interface";
 import { nanoid } from "nanoid";
-import { publicationDb } from "../db/publication";
-import { TaJsonSerialize } from "r2-lcp-js/dist/es8-es2017/src/serializable";
+import { publicationDb, publicationConverter } from "../db/publication";
 
 export const savePublicationInDb = async (publication: OPDSPublication): Promise<IPublicationDb["publication"]> => {
     
@@ -51,13 +50,12 @@ export const updatePublicationInDb = async (id: string, publication: OPDSPublica
             ...data,
             popularityCounter: typeof data.popularityCounter === "number" ? data.popularityCounter + 1 : 0,
             modifiedTimestamp: Date.now(),
-            // firestore doesn't call 'toFirestore' converter on update request !!
-            // need to force cast to any
-            // TODO how to improve it ?
-            publication: TaJsonSerialize(publication) as any,
+            publication: publication,
         }
 
-        await ref.update(doc);
+        // !
+        // firestore update doesn't call publicationConverter
+        await ref.update(publicationConverter.toFirestore(doc));
 
         return doc.publication;
     } else {

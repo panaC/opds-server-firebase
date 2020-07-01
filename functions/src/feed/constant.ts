@@ -39,7 +39,7 @@ export const hrefFn = (path: string) =>
 
 export const LINK_TYPE = 'application/opds+json';
 
-export const isAGoodArray = (a: Array<any>) => {
+export const isAGoodArray = (a: any) => {
     return Array.isArray(a) && !!a.length;
 }
 

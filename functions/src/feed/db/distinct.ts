@@ -1,17 +1,40 @@
 import { publicationDb } from "../../db/publication";
+import { isAGoodArray } from "../constant";
 
 export const distinctLanguage = async () => {
 
-    const snap = await (await publicationDb.select('publication.metadata.language').get()).docs;
-    const data = snap.reduce((pv, cv) => pv.add((cv.data() as any).publication.metadata.language), new Set<string>());
+    const snap = await publicationDb.select("publication.metadata.language").get();
+    const docsArray = snap.docs;
+    const dataArray = docsArray.map((v) => v.data());
+    const langSet = dataArray.reduce(
+        (pv, cv) => {
+            const a = cv.publication?.Metadata?.Language;
+            if (isAGoodArray(a)) {
+                a.forEach((lang) => pv.add(lang));
+            }
+            return pv;
+        },
+        new Set<string>()
+    );
 
-    return [...data];
+    return [...langSet];
 }
 
 export const distinctSubject = async () => {
 
-    const snap = await (await publicationDb.select('publication.metadata.subject').get()).docs;
-    const data = snap.reduce((pv, cv) => pv.add((cv.data() as any).publication.metadata.subject), new Set<string>());
+    const snap = await publicationDb.select("publication.metadata.subject").get();
+    const docsArray = snap.docs;
+    const dataArray = docsArray.map((v) => v.data());
+    const subSet = dataArray.reduce(
+        (pv, cv) => {
+            const a = cv.publication?.Metadata?.Subject;
+            if (isAGoodArray(a)) {
+                a.forEach((sub) => sub.Name ?? pv.add(sub.Name));
+            }
+            return pv;
+        },
+        new Set<string>()
+    );
 
-    return [...data];
+    return [...subSet];
 }

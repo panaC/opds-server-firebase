@@ -86,7 +86,7 @@ export const parseQuery = (query: TQuery): IParsedQuery => {
 
                 if (value && typeof value === "string") {
                     // @ts-ignore
-                    o[key] = value;
+                    o[key] = decodeURI(value);
                 }
 
                 break;
@@ -95,7 +95,7 @@ export const parseQuery = (query: TQuery): IParsedQuery => {
 
                 if (value && typeof value === "string") {
                     
-                    const a = value;
+                    const a = decodeURI(value);
                     const b = parseInt(a, 10);
                     const c = isNaN(b) || b < 1 ? 1 : b;
                     o.page = c;
@@ -107,7 +107,7 @@ export const parseQuery = (query: TQuery): IParsedQuery => {
 
                 if (value && typeof value === "string") {
                     
-                    const a = value;
+                    const a = decodeURI(value);
                     const b = parseInt(a, 10);
                     const c = isNaN(b) || b < 0 ? 0 : b;
                     o.number = c;

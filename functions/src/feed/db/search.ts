@@ -35,23 +35,23 @@ export const searchPublication = async (query: IParsedQuery): Promise<OPDSPublic
     }
 
     if (queryFromQuery) {
-        dbQuery = dbQuery.where("publication/metadata/title", "==", queryFromQuery);
+        dbQuery = dbQuery.where("metadataTitle", "array-contains", queryFromQuery);
     } else {
         if (title) {
-            dbQuery = dbQuery.where("publication/metadata/title", "==", title);
+            dbQuery = dbQuery.where("metadataTitle", "array-contains", title);
         } else if (author) {
-            dbQuery = dbQuery.where("publication/metadata/author", "==", author);
+            dbQuery = dbQuery.where("metadataAuthor", "array-contains", author);
         }
     }
 
     if (subject) {
-        dbQuery = dbQuery.where("publication/metadata/subject", "==", subject);
+        dbQuery = dbQuery.where("metadataSubject", "array-contains", subject);
     }
     if (publisher) {
-        dbQuery = dbQuery.where("publication/metadata/publisher", "==", publisher);
+        dbQuery = dbQuery.where("metadataPublisher", "array-contains", publisher);
     }
     if (language) {
-        dbQuery = dbQuery.where("publication/metadata/language", "==", language);
+        dbQuery = dbQuery.where("metadataLanguage", "array-contains", language);
     }
 
     const snap = await dbQuery.get();
