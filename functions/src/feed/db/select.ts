@@ -1,5 +1,5 @@
 import { OPDSPublication } from "r2-opds-js/dist/es8-es2017/src/opds/opds2/opds2-publication";
-import { PUBLICATION_NUMBER_LIMIT } from "../constant";
+import { PUBLICATION_NUMBER_LIMIT } from "../../constant";
 import { publicationDb } from "../../db/publication";
 
 export const getMostRecentPublicationFromDb = async (): Promise<OPDSPublication[]> => {

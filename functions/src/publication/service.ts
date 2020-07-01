@@ -2,17 +2,33 @@ import { OPDSPublication } from "r2-opds-js/dist/es8-es2017/src/opds/opds2/opds2
 import { IPublicationDb } from "../db/interface/publication.interface";
 import { nanoid } from "nanoid";
 import { publicationDb, publicationConverter } from "../db/publication";
+import { publicationHrefFn, LINK_TYPE } from "../constant";
+import { OPDSLink } from "r2-opds-js/dist/es8-es2017/src/opds/opds2/opds2-link";
+
+const addSelfLink = (publication: OPDSPublication, pubId: string) => {
+        publication.Links = publication.Links.reduce(
+            (pv, cv) => cv?.HasRel("self") ? pv : [...pv, cv],
+            new Array<OPDSLink>(),
+        );
+        const href = publicationHrefFn(pubId);
+        // @ts-ignore 
+        // bad type on functions, missing '?'
+        publication.AddLink_(href, LINK_TYPE, "self");
+}
 
 export const savePublicationInDb = async (publication: OPDSPublication): Promise<IPublicationDb["publication"]> => {
     
     const pubId = publication.Metadata.Identifier = publication.Metadata.Identifier || nanoid();
+
+    addSelfLink(publication, pubId);
+
     const doc: IPublicationDb = {
         popularityCounter: 0,
         publication: publication,
         createTimestamp: Date.now(),
         modifiedTimestamp: Date.now(),
     };
-    
+
     const document = await publicationDb.doc(pubId).get();
     if (document.exists) {
         throw new Error("publication already exists");
@@ -45,7 +61,11 @@ export const updatePublicationInDb = async (id: string, publication: OPDSPublica
     const ref = publicationDb.doc(id);
     const document = await ref.get();
     if (document.exists && document.data()) {
+    
         const data = document.data() as IPublicationDb; // bad infer
+
+        addSelfLink(publication, publication.Metadata.Identifier);
+
         const doc: IPublicationDb = {
             ...data,
             popularityCounter: typeof data.popularityCounter === "number" ? data.popularityCounter + 1 : 0,

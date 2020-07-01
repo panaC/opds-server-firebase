@@ -7,9 +7,9 @@ import { OPDSMetadata } from "r2-opds-js/dist/es8-es2017/src/opds/opds2/opds2-me
 import { OPDSPublication } from "r2-opds-js/dist/es8-es2017/src/opds/opds2/opds2-publication";
 
 import {
-    groupsAllowed, hrefFn, isAGoodArray, LINK_TYPE, PUBLICATION_NUMBER_LIMIT, queryAllowed,
-    searchHrefFn, selfHref,
-} from "./constant";
+    groupsAllowed, feedHrefFn, isAGoodArray, LINK_TYPE, PUBLICATION_NUMBER_LIMIT, queryAllowed,
+    feedSearchHrefFn, selfHref,
+} from "../constant";
 import { distinctLanguage, distinctSubject } from "./db/distinct";
 import {
     getMostDownloadedPublicationFromDb, getMostRecentPublicationFromDb, getPromotePublicationFromDb,
@@ -79,16 +79,16 @@ export const createFeed = async (
         const nbPages = Math.ceil(publication.length / PUBLICATION_NUMBER_LIMIT);
 
         if (page < nbPages) {
-            nextLink = hrefFn(queryToPath(query, { [queryAllowed.page]: (page + 1).toString() }));
+            nextLink = feedHrefFn(queryToPath(query, { [queryAllowed.page]: (page + 1).toString() }));
         }
         if (page + 1 < nbPages) {
-            lastLink = hrefFn(queryToPath(query, { [queryAllowed.page]: (nbPages).toString() }));
+            lastLink = feedHrefFn(queryToPath(query, { [queryAllowed.page]: (nbPages).toString() }));
         }
         if (page > 1) {
-            prevLink = hrefFn(queryToPath(query, { [queryAllowed.page]: (page - 1).toString() }));
+            prevLink = feedHrefFn(queryToPath(query, { [queryAllowed.page]: (page - 1).toString() }));
         }
         if (page - 1 > 1) {
-            firstLink = hrefFn(queryToPath(query, { [queryAllowed.page]: "0" }));
+            firstLink = feedHrefFn(queryToPath(query, { [queryAllowed.page]: "0" }));
         }
         opds.AddPagination(
             publication.length,
@@ -102,18 +102,18 @@ export const createFeed = async (
 
     }
 
-    opds.AddLink(hrefFn(queryToPath(query)), "self", LINK_TYPE, false);
-    opds.AddLink(searchHrefFn(queryToPath(query)), "search", LINK_TYPE, true);
+    opds.AddLink(feedHrefFn(queryToPath(query)), "self", LINK_TYPE, false);
+    opds.AddLink(feedSearchHrefFn(queryToPath(query)), "search", LINK_TYPE, true);
 
     opds.AddNavigation("HOME", selfHref.toString(), "self", LINK_TYPE);
-    opds.AddNavigation("All publications", hrefFn(queryToPath(query, { [queryAllowed.number]: "*" })), "", LINK_TYPE);
-    opds.AddNavigation("Are you curious ?", hrefFn(queryToPath(query, { [queryAllowed.number]: "10" })), "", LINK_TYPE);
+    opds.AddNavigation("All publications", feedHrefFn(queryToPath(query, { [queryAllowed.number]: "*" })), "", LINK_TYPE);
+    opds.AddNavigation("Are you curious ?", feedHrefFn(queryToPath(query, { [queryAllowed.number]: "10" })), "", LINK_TYPE);
 
     if (!query.language) {
         const languages = await distinctLanguage();
         languages.forEach((lang) => {
 
-            const ln = createLink(hrefFn(queryToPath(query, { [queryAllowed.language]: lang })), lang);
+            const ln = createLink(feedHrefFn(queryToPath(query, { [queryAllowed.language]: lang })), lang);
             opds.AddFacet(ln, lang);
         });
     }
@@ -123,7 +123,7 @@ export const createFeed = async (
 
             const subjectPub = await getSubjectPublicationFromDb(sub);
             if (isAGoodArray(subjectPub)) {
-                const ln = createLink(hrefFn(queryToPath(query, { [queryAllowed.subject]: sub })), sub);
+                const ln = createLink(feedHrefFn(queryToPath(query, { [queryAllowed.subject]: sub })), sub);
                 opds.AddFacet(ln, sub);
             }
         }
@@ -147,15 +147,15 @@ export const createHomeFeed = async (
     opds.Metadata.Title = title;
 
     opds.AddLink(selfHref.toString(), "self", LINK_TYPE, false);
-    opds.AddLink(searchHrefFn(""), "search", LINK_TYPE, true);
+    opds.AddLink(feedSearchHrefFn(""), "search", LINK_TYPE, true);
 
-    opds.AddNavigation("All publications", hrefFn(queryToPath({ [queryAllowed.number]: "*" })), "", LINK_TYPE);
-    opds.AddNavigation("Are you curious ?", hrefFn(queryToPath({ [queryAllowed.number]: "10" })), "self", LINK_TYPE);
+    opds.AddNavigation("All publications", feedHrefFn(queryToPath({ [queryAllowed.number]: "*" })), "", LINK_TYPE);
+    opds.AddNavigation("Are you curious ?", feedHrefFn(queryToPath({ [queryAllowed.number]: "10" })), "self", LINK_TYPE);
 
     const languages = await distinctLanguage();
     languages.forEach((lang) => {
 
-        const ln = createLink(hrefFn(queryToPath({ [queryAllowed.language]: lang })), lang);
+        const ln = createLink(feedHrefFn(queryToPath({ [queryAllowed.language]: lang })), lang);
         opds.AddFacet(ln, lang);
     });
 
@@ -163,14 +163,14 @@ export const createHomeFeed = async (
     {
         const mostRecent = await getMostRecentPublicationFromDb();
         if (isAGoodArray(mostRecent)) {
-            const ln = createLink(hrefFn(queryToPath({ [queryAllowed.group]: groupsAllowed.mostRecent })), groupsAllowed.mostRecent);
+            const ln = createLink(feedHrefFn(queryToPath({ [queryAllowed.group]: groupsAllowed.mostRecent })), groupsAllowed.mostRecent);
             opds.Groups.push(createGroup(mostRecent, ln));
         }
     }
     {
         const mostDown = await getMostDownloadedPublicationFromDb();
         if (isAGoodArray(mostDown)) {
-            const ln = createLink(hrefFn(queryToPath({ [queryAllowed.group]: groupsAllowed.mostDownloaded })), groupsAllowed.mostDownloaded);
+            const ln = createLink(feedHrefFn(queryToPath({ [queryAllowed.group]: groupsAllowed.mostDownloaded })), groupsAllowed.mostDownloaded);
             opds.Groups.push(createGroup(mostDown, ln));
         }
     }
@@ -180,7 +180,7 @@ export const createHomeFeed = async (
 
             const subjectPub = await getSubjectPublicationFromDb(sub);
             if (isAGoodArray(subjectPub)) {
-                const ln = createLink(hrefFn(queryToPath({ [queryAllowed.subject]: sub })), sub);
+                const ln = createLink(feedHrefFn(queryToPath({ [queryAllowed.subject]: sub })), sub);
                 opds.Groups.push(createGroup(subjectPub, ln));
             }
         }

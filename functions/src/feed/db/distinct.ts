@@ -1,5 +1,5 @@
 import { publicationDb } from "../../db/publication";
-import { isAGoodArray } from "../constant";
+import { isAGoodArray } from "../../constant";
 
 export const distinctLanguage = async () => {
 

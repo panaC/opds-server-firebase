@@ -2,7 +2,7 @@ import { db } from "./db";
 import { IPublicationDb } from "./interface/publication.interface";
 import { TaJsonSerialize, TaJsonDeserialize, JsonMap } from "r2-lcp-js/dist/es8-es2017/src/serializable";
 import { OPDSPublication } from "r2-opds-js/dist/es8-es2017/src/opds/opds2/opds2-publication";
-import { isAGoodArray } from "../feed/constant";
+import { isAGoodArray } from "../constant";
 import { IStringMap } from "r2-shared-js/dist/es8-es2017/src/models/metadata-multilang";
 
 interface IPublicationMetadataDbInternal {

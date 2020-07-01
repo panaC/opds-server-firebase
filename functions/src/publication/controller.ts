@@ -66,7 +66,7 @@ export const update = async (req: functions.https.Request, res: functions.Respon
 
     if (typeof id === "string" && id) {
         return await handlePublication(req, res, async (publication) => {
-            return await updatePublicationInDb(id, publication);
+            return await updatePublicationInDb(decodeURI(id), publication);
         }, "update");
     } else {
 
@@ -87,7 +87,7 @@ export const read = async (req: functions.https.Request, res: functions.Response
         }
 
         try {
-            const publication = await getPublicationInDb(id);
+            const publication = await getPublicationInDb(decodeURI(id));
             return send(200, "", TaJsonSerialize(publication));
 
         } catch (e) {
@@ -122,7 +122,7 @@ export const delete_ = async (req: functions.https.Request, res: functions.Respo
     if (typeof id === "string" && id) {
         
         try {
-            await deletePublicationInDb(id);
+            await deletePublicationInDb(decodeURI(id));
             return send(200);
 
         } catch (e) {

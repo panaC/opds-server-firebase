@@ -1,7 +1,7 @@
 import { IParsedQuery } from "../query.type";
 import { OPDSPublication } from "r2-opds-js/dist/es8-es2017/src/opds/opds2/opds2-publication";
 import { publicationDb } from "../../db/publication";
-import { /*PUBLICATION_NUMBER_LIMIT,*/ groupsAllowed } from "../constant";
+import { /*PUBLICATION_NUMBER_LIMIT,*/ groupsAllowed } from "../../constant";
 import { IPublicationDb } from "../../db/interface/publication.interface";
 
 export const searchPublication = async (query: IParsedQuery): Promise<OPDSPublication[]> => {

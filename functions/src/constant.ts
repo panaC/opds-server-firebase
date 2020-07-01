@@ -9,6 +9,7 @@ const hostname = config().server.domain;
 export const serverHref = new URL(protocol + "://" + hostname + ":" + port + "/" + pathname);
 
 export const feedRoute = "/feed";
+export const publicationRoute = "/publication";
 
 export const selfHref = new URL(feedRoute, serverHref);
 export const selfHrefClone = () => new URL("", selfHref);
@@ -31,11 +32,19 @@ export const groupsAllowed = {
 }
 
 // TODO : handle templated url with {&}
-export const searchHrefFn = (path: string) =>
+export const feedSearchHrefFn = (path: string) =>
     new URL(feedRoute + path, serverHref).toString() + "{?" + Object.keys(queryAllowed).join(',') + "}";
 
-export const hrefFn = (path: string) =>
+export const feedHrefFn = (path: string) =>
     new URL(feedRoute + path, serverHref).toString();
+
+export const publicationHrefFn = (id: string) => {
+    const u = new URL(publicationRoute, serverHref);
+
+    u.searchParams.append("id", encodeURI(id));
+
+    return u.toString();
+}
 
 export const LINK_TYPE = 'application/opds+json';
 

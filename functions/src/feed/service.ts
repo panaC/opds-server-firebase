@@ -4,7 +4,7 @@ import { createHomeFeed } from "./createFeed";
 import { TaJsonSerialize } from "r2-lcp-js/dist/es8-es2017/src/serializable";
 import * as qs from "qs";
 import { TQuery, IParsedQuery, TQueryAllowed } from "./query.type";
-import { queryAllowed } from "./constant";
+import { queryAllowed } from "../constant";
 // import { OPDSFeed } from "r2-opds-js/dist/es8-es2017/src/opds/opds2/opds2";
 
 export const pathToQuery = (path: string): TQuery => {

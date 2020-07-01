@@ -1,4 +1,4 @@
-import { queryAllowed } from "./constant";
+import { queryAllowed } from "../constant";
 
 export type TQuery<T = string> = {
     [key in TQueryAllowed]?: T;
