@@ -1,22 +1,27 @@
 import * as functions from "firebase-functions";
 import { findAndReturnFeed, searchRequest } from "./controller";
-import { updateFeed } from "./service";
+import { updateFeed, setFeed } from "./service";
 import { response } from "../utils/response";
 
 export const sync = functions.firestore.document("/publication/{id}").onWrite(
     async (change, context) => {
 
-
-        // generate the new feed id db
-        // TODO: need optimisation
-        // TODO : verify if feed already exists
-        await updateFeed();
-
         console.log("change", change);
         console.log("context", context);
-        
-        
 
+        try {
+            await updateFeed();
+        } catch (e) {
+            console.log("no feed found");
+            
+            try {
+                await setFeed();
+            } catch (e) {
+                console.log("error to create feed");
+                
+                return ;
+            }
+        }
 
         console.log("FEED updated");
         

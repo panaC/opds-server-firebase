@@ -44,6 +44,12 @@ export const createFeed = async () => {
     return feed;
 }
 
+export const setFeed = async () => {
+    const feed = await createFeed();
+    await feedDoc.set(feed);
+    return feed;
+}
+
 export const updateFeed = async () => {
     const feed = await createFeed();
     await feedDoc.update(feed);
@@ -60,9 +66,7 @@ export const getFeed = async () => {
     } else {
         console.log("feed doesn't exists create it");
         
-        const feed = await createFeed();
-        await feedDoc.set(feed);
-
+        const feed = await setFeed();
         return feed;
     }
 }
