@@ -15,11 +15,13 @@ import { feedFn, sync } from "./feed";
 import { addMessage} from "./addMessage";
 import { publicationFonction } from "./publication";
 import { storageFunction } from "./storage";
+import { generateFonction } from "./generate";
 
 const webpub = https.onRequest(webpubFonction);
 const publication = https.onRequest(publicationFonction);
 const feed = https.onRequest(feedFn);
 const storage = https.onRequest(storageFunction);
+const generate = https.onRequest(generateFonction);
 
 export {
     sync,
@@ -28,4 +30,5 @@ export {
     publication,
     feed,
     storage,
+    generate,
 };

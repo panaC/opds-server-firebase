@@ -17,7 +17,7 @@ export const sync = functions.firestore.document("/publication/{id}").onWrite(
             try {
                 await setFeed();
             } catch (e) {
-                console.log("error to create feed");
+                console.log("error to create feed", e);
                 
                 return ;
             }
