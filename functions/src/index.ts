@@ -14,10 +14,12 @@ import { webpubFonction } from "./webpub";
 import { feedFn, sync } from "./feed";
 import { addMessage} from "./addMessage";
 import { publicationFonction } from "./publication";
+import { storageFunction } from "./storage";
 
 const webpub = https.onRequest(webpubFonction);
 const publication = https.onRequest(publicationFonction);
 const feed = https.onRequest(feedFn);
+const storage = https.onRequest(storageFunction);
 
 export {
     sync,
@@ -25,4 +27,5 @@ export {
     webpub,
     publication,
     feed,
+    storage,
 };
