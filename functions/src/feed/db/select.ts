@@ -9,31 +9,37 @@ export const getMostRecentPublicationFromDb = async (): Promise<OPDSPublication[
         .limit(PUBLICATION_NUMBER_LIMIT)
         .get();
     const docsArray = snap.docs;
-    const pubArray = docsArray.map((d) => d.data().publication);
+    const pubsArray = docsArray
+        .map((d) => d.data()?.publication)
+        .filter((v) => v) as OPDSPublication[];
 
-    return pubArray;
+    return pubsArray;
 };
 
-export const getMostDownloadedPublicationFromDb = async () => {
+export const getMostDownloadedPublicationFromDb = async (): Promise<OPDSPublication[]> => {
 
     const snap = await publicationDb
         .orderBy("popularityCounter", "desc")
         .limit(PUBLICATION_NUMBER_LIMIT)
         .get();
     const docsArray = snap.docs;
-    const pubArray = docsArray.map((d) => d.data().publication);
+    const pubArray = docsArray
+        .map((d) => d.data()?.publication)
+        .filter((v) => v) as OPDSPublication[];
 
     return pubArray;
 };
 
-export const getSubjectPublicationFromDb = async (sub: string) => {
+export const getSubjectPublicationFromDb = async (sub: string): Promise<OPDSPublication[]> => {
 
     const snap = await publicationDb
         .where("metadataSubject", "array-contains", sub)
         .limit(PUBLICATION_NUMBER_LIMIT)
         .get();
     const docsArray = snap.docs;
-    const pubArray = docsArray.map((d) => d.data().publication);
+    const pubArray = docsArray
+        .map((d) => d.data()?.publication)
+        .filter((v) => v) as OPDSPublication[];
 
     return pubArray;
 };

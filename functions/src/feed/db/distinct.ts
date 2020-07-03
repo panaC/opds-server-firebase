@@ -3,14 +3,15 @@ import { isAGoodArray } from "../../constant";
 
 export const distinctLanguage = async () => {
 
-    const snap = await publicationDb.select("publication.metadata.language").get();
+    const snap = await publicationDb.select("metadataLanguage").get();
     const docsArray = snap.docs;
     const dataArray = docsArray.map((v) => v.data());
     const langSet = dataArray.reduce(
         (pv, cv) => {
-            const a = cv.publication?.Metadata?.Language;
-            if (isAGoodArray(a)) {
-                a.forEach((lang) => pv.add(lang));
+            // @ts-ignore
+            const a = cv.metadataLanguage;
+            if (a && isAGoodArray(a)) {
+                a.forEach((lang) => lang ?? pv.add(lang));
             }
             return pv;
         },
@@ -22,14 +23,15 @@ export const distinctLanguage = async () => {
 
 export const distinctSubject = async () => {
 
-    const snap = await publicationDb.select("publication.metadata.subject").get();
+    const snap = await publicationDb.select("metadataSubject").get();
     const docsArray = snap.docs;
     const dataArray = docsArray.map((v) => v.data());
     const subSet = dataArray.reduce(
         (pv, cv) => {
-            const a = cv.publication?.Metadata?.Subject;
-            if (isAGoodArray(a)) {
-                a.forEach((sub) => sub.Name ?? pv.add(sub.Name));
+            // @ts-ignore
+            const a = cv.metadataSubject;
+            if (a && isAGoodArray(a)) {
+                a.forEach((sub) => sub ?? pv.add(sub));
             }
             return pv;
         },

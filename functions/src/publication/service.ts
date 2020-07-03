@@ -68,7 +68,11 @@ export const getPublicationInDb = async (id: string): Promise<IPublicationDb["pu
 export const getAllPublication = async (): Promise<IPublicationDb["publication"][]> => {
 
     const document = await publicationDb.get();
-    return document.docs.map((v) => v.data().publication);
+    const pubs = document.docs
+        .map((v) => v.data()?.publication)
+        .filter((v) => v) as OPDSPublication[];
+
+    return pubs;
 }
 
 export const updatePublicationInDb = async (id: string, publication: OPDSPublication): Promise<IPublicationDb["publication"]> => {

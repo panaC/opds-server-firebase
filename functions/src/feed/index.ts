@@ -6,8 +6,8 @@ import { response } from "../utils/response";
 export const sync = functions.firestore.document("/publication/{id}").onWrite(
     async (change, context) => {
 
-        console.log("change", change);
-        console.log("context", context);
+        // console.log("change", change);
+        // console.log("context", context);
 
         try {
             await updateFeed();

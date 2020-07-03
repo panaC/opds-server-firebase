@@ -84,9 +84,11 @@ export const searchPublication = async (query: IParsedQuery): Promise<OPDSPublic
     const snap = await dbQuery.get();
 
     if (!snap.empty) {
-        publication = snap.docs.map(
-            (d) => d.data().publication,
-        );
+        publication = snap.docs
+            .map(
+                (d) => d.data()?.publication,
+            )
+            .filter((v) => v) as OPDSPublication[];
     }
     return publication;
 }

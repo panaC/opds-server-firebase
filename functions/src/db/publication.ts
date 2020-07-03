@@ -116,11 +116,27 @@ export const publicationConverter: FirebaseFirestore.FirestoreDataConverter<IPub
 
     fromFirestore: (obj: IPublicationDbInternal) => {
 
+        let publication: OPDSPublication;
+        try {
+            publication = TaJsonDeserialize(obj.publication, OPDSPublication);
+        } catch (e) {
+            // console.log("the publication can't be deserialized", typeof obj.publication, obj);
+            // on db.select
+
+            // fallback to not set undefined publication in from and to
+            publication = new OPDSPublication();
+        }
+
         return ({
-            publication: TaJsonDeserialize(obj.publication, OPDSPublication),
+            publication,
+            publicationNotParsed: obj.publication,
             modifiedTimestamp: obj.modifiedTimestamp,
             createTimestamp: obj.createTimestamp,
             popularityCounter: obj.popularityCounter,
+
+            // used in distinct.ts
+            metadataLanguage: obj.metadataLanguage || [],
+            metadataSubject: obj.metadataSubject || [],
         });
     },
 }

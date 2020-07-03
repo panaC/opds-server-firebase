@@ -109,25 +109,35 @@ export const createFeed = async (
     opds.AddNavigation("All publications", feedHrefFn(queryToPath(query, { [queryAllowed.number]: "*" })), "", LINK_TYPE);
     opds.AddNavigation("Are you curious ?", feedHrefFn(queryToPath(query, { [queryAllowed.number]: "10" })), "", LINK_TYPE);
 
-    if (!query.language) {
-        const languages = await distinctLanguage();
-        languages.forEach((lang) => {
-
-            const ln = createLink(feedHrefFn(queryToPath(query, { [queryAllowed.language]: lang })), lang);
-            opds.AddFacet(ln, lang);
-        });
+    try {
+        if (!query.language) {
+            const languages = await distinctLanguage();
+            languages.forEach((lang) => {
+    
+                const ln = createLink(feedHrefFn(queryToPath(query, { [queryAllowed.language]: lang })), lang);
+                opds.AddFacet(ln, lang);
+            });
+        }
+    } catch (e) {
+        console.log("error to create language facet in home feed");
     }
-    if (!query.subject) {
-        const subjects = await distinctSubject();
-        for await (const sub of subjects) {
 
-            const subjectPub = await getSubjectPublicationFromDb(sub);
-            if (isAGoodArray(subjectPub)) {
-                const ln = createLink(feedHrefFn(queryToPath(query, { [queryAllowed.subject]: sub })), sub);
-                opds.AddFacet(ln, sub);
+    try {
+        if (!query.subject) {
+            const subjects = await distinctSubject();
+            for await (const sub of subjects) {
+    
+                const subjectPub = await getSubjectPublicationFromDb(sub);
+                if (isAGoodArray(subjectPub)) {
+                    const ln = createLink(feedHrefFn(queryToPath(query, { [queryAllowed.subject]: sub })), sub);
+                    opds.AddFacet(ln, sub);
+                }
             }
         }
+    } catch (e) {
+        console.log("error to create subject facet in home feed");
     }
+
     if (!publication) {
         opds.Publications = [];
     } else {
@@ -152,29 +162,38 @@ export const createHomeFeed = async (
     opds.AddNavigation("All publications", feedHrefFn(queryToPath({ [queryAllowed.number]: "*" })), "", LINK_TYPE);
     opds.AddNavigation("Are you curious ?", feedHrefFn(queryToPath({ [queryAllowed.number]: "10" })), "self", LINK_TYPE);
 
-    const languages = await distinctLanguage();
-    languages.forEach((lang) => {
 
-        const ln = createLink(feedHrefFn(queryToPath({ [queryAllowed.language]: lang })), lang);
-        opds.AddFacet(ln, lang);
-    });
+    try {
+        const languages = await distinctLanguage();
+        languages.forEach((lang) => {
+    
+            const ln = createLink(feedHrefFn(queryToPath({ [queryAllowed.language]: lang })), lang);
+            opds.AddFacet(ln, lang);
+        });
+    } catch (e) {
+        console.log("error to create language facets in homefeed", e);
+    }
 
     opds.Groups = new Array<OPDSGroup>();
-    {
-        const mostRecent = await getMostRecentPublicationFromDb();
-        if (isAGoodArray(mostRecent)) {
-            const ln = createLink(feedHrefFn(queryToPath({ [queryAllowed.group]: groupsAllowed.mostRecent })), groupsAllowed.mostRecent);
-            opds.Groups.push(createGroup(mostRecent, ln));
-        }
+    try {
+            const mostRecent = await getMostRecentPublicationFromDb();
+            if (isAGoodArray(mostRecent)) {
+                const ln = createLink(feedHrefFn(queryToPath({ [queryAllowed.group]: groupsAllowed.mostRecent })), groupsAllowed.mostRecent);
+                opds.Groups.push(createGroup(mostRecent, ln));
+            }
+    } catch (e) {
+        console.log("error to create mostRecent group in home feed", e);
     }
-    {
+    try {
         const mostDown = await getMostDownloadedPublicationFromDb();
         if (isAGoodArray(mostDown)) {
             const ln = createLink(feedHrefFn(queryToPath({ [queryAllowed.group]: groupsAllowed.mostDownloaded })), groupsAllowed.mostDownloaded);
             opds.Groups.push(createGroup(mostDown, ln));
         }
+    } catch (e) {
+        console.log("error to create mostDownloaded group in home feed", e);
     }
-    {
+    try {
         const subjects = await distinctSubject();
         for await (const sub of subjects) {
 
@@ -184,6 +203,9 @@ export const createHomeFeed = async (
                 opds.Groups.push(createGroup(subjectPub, ln));
             }
         }
+    } catch (e) {
+        console.log("error to create subject group in home feed", e);
+        
     }
 
     const promote = await getPromotePublicationFromDb();
