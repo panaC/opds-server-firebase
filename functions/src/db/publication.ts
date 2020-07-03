@@ -21,10 +21,6 @@ interface IPublicationDbInternal extends
 
 export const publicationConverter: FirebaseFirestore.FirestoreDataConverter<IPublicationDb> = {
 
-
-    // TODO
-    // add selfLink in publication
-
     toFirestore: (obj): IPublicationDbInternal => {
 
         let title = new Array<string>();
