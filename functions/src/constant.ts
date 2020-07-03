@@ -8,7 +8,9 @@ const protocol = config().server.protocol;
 const port = config().server.port;
 const pathname = config().server.path;
 const hostname = config().server.domain;
-export const serverHref = new URL(protocol + "://" + hostname + ":" + port + "/" + pathname);
+
+const portInUrl = (port === "80" || port === "443" || !port) ? "" : ":" + port;
+export const serverHref = new URL(protocol + "://" + hostname + portInUrl + "/" + pathname);
 
 export const feedRoute = "/feed";
 export const publicationRoute = "/publication";
