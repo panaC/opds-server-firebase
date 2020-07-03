@@ -6,14 +6,15 @@ import {
 import { IZip } from "r2-utils-js/dist/es8-es2017/src/_utils/zip/zip.d";
 import { streamToBufferPromise } from "r2-utils-js/dist/es8-es2017/src/_utils/stream/BufferUtils";
 
-import { save } from "../storage/service";
+import { save, deleteFile } from "../storage/service";
 import { response } from "../utils/response";
 import { promises } from "fs";
 import { OPDSPublication } from "r2-opds-js/dist/es8-es2017/src/opds/opds2/opds2-publication";
-import { savePublicationInDb } from "../publication/service";
+import { savePublicationInDb, getPublicationInDb, deletePublicationInDb } from "../publication/service";
 import { TaJsonSerialize } from "r2-lcp-js/dist/es8-es2017/src/serializable";
 import { publicationDb } from "../db/publication";
 import { nanoid } from "nanoid";
+import { URL } from "url";
 
 const epubTypeLink = "application/epub+zip";
 
@@ -123,3 +124,62 @@ export const generatePublication = async (req: functions.https.Request, res: fun
         send(400, "content-type is not for an epub file");
     }
 };
+
+export const delete_ = async (req: functions.https.Request, res: functions.Response<any>) => {
+
+    const send = response(res);
+
+    console.log("DELETE");
+    
+
+    let filename = req.query["id"];
+    if (typeof filename === "string" && filename) {
+
+        const id = decodeURI(filename);
+        try {
+            
+            const publication = await getPublicationInDb(id);
+
+            console.log("publication found");
+            
+            try {
+                const acquiLink = publication.Links.find((l) => l.HasRel("http://opds-spec.org/acquisition/open-access"))?.Href || "";
+                const url = new URL(acquiLink);
+                const name = basename(url.pathname);
+
+                console.log("delete epub");
+
+                await deleteFile(name);
+            } catch (e) {
+                console.log(e);
+                throw new Error("epub file in storage not removed ;; ");
+            }
+            try {
+                const acquiLink = publication.Images.find((l) => l.HasRel("cover"))?.Href || "";
+                const url = new URL(acquiLink);
+                const name = basename(url.pathname);
+
+                console.log("delete cover");
+
+                await deleteFile(name);
+            } catch (e) {
+                throw new Error("cover image in storage not removed ;; ");
+            }
+
+            try {
+                console.log("delete publication in db");
+    
+                await deletePublicationInDb(id);
+            } catch (e) {
+                console.log(e);
+                throw new Error("publication not deleted in db ;; ");
+            }
+
+            send(200);
+
+        } catch (e) {
+            send(500, e.toString(), e.stack);
+        }
+    }
+
+}

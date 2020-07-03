@@ -1,7 +1,7 @@
 
 import * as functions from "firebase-functions";
 import { response } from "../utils/response";
-import { generatePublication } from "./controller";
+import { generatePublication, delete_ } from "./controller";
 
 export const generateFonction = async (req: functions.https.Request, res: functions.Response<any>) => {
 
@@ -11,8 +11,13 @@ export const generateFonction = async (req: functions.https.Request, res: functi
     try {
 
         switch (req.method) {
+            case "PUT":
             case "POST": {
                 return await generatePublication(req, res);
+            }
+
+            case "DELETE": {
+                return await delete_(req, res);
             }
 
             default: {
