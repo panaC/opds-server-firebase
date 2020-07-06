@@ -22,8 +22,8 @@ To create an API REST google called it the Cloud Functions in firebase : https:/
 When we deploy the server to firebase, to used it in production, you have to apply to the 'blaze plan'.
 This plan unlock the billing.
 
-The price to used this server is free for a private or limite used. Maybe several hundred of publication hosted in the application with the same number of monthly users. In case of high demand the price will stay low.
-You can see the price of each firebase feature. https://firebase.google.com/pricing.
+The price to used this server is free for a private or limit used. Maybe several hundred of publication hosted in the application with the same number of monthly users. In case of high demand the price will stay low.
+You can see the price of each firebase features. https://firebase.google.com/pricing.
 
 ### firebase architecture used
 
