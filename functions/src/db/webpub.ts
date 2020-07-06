@@ -17,12 +17,24 @@ const webpubConverter: FirebaseFirestore.FirestoreDataConverter<IWebpubDb> = {
         })
     },
 
-    fromFirestore: (obj) => ({
-        publication: TaJsonDeserialize(obj.publication, R2Publication),
-        modifiedTimestamp: obj.modifiedTimestamp,
-        createTimestamp: obj.createTimestamp,
-        popularityCounter: obj.popularityCounter,
-    })
+    fromFirestore: (obj) => {
+
+        let publication: R2Publication;
+        try {
+            publication = TaJsonDeserialize(obj.publication, R2Publication);
+        } catch (e) {
+
+            // fallback to not set undefined publication in from and to
+            publication = new R2Publication();
+        }
+
+        return {
+            publication: TaJsonDeserialize(obj.publication, R2Publication),
+            modifiedTimestamp: obj.modifiedTimestamp,
+            createTimestamp: obj.createTimestamp,
+            popularityCounter: obj.popularityCounter,
+        };
+    },
 }
 
 export const webpubDb = db
