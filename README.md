@@ -136,3 +136,50 @@ and then execute it
 ### and you can simply deploy it in firebase server
 
     firebase deploy
+
+
+## documentation
+
+the server has 5 entry points
+
+- /publication
+    - POST : save in db the publication
+        - body: 'publication': [OPDSPublication](https://drafts.opds.io/opds-2.0#41-opds-publication)
+    - PUT : update in db the [publication](https://drafts.opds.io/opds-2.0#41-opds-publication)
+        - body: 'publication' : OPDSPublication
+        - query: 'id': id string in publication metadata identifier
+    - DELETE : delete in db the publication
+        - query: 'id': id string in publication metadata identifier
+    - GET : get the publication
+        - query: 'id': id string in publication metadata identifier
+        - no query and no body : returns an array of all publications in db
+- /webpub
+    - POST : save in db the webpub
+        - body: 'webpub' : [R2Publication](https://github.com/readium/webpub-manifest)
+    - PUT : update in db the webpub
+        - body: 'webpub' : [R2Publication](https://github.com/readium/webpub-manifest)
+        - query: 'id': id string in webpub metadata identifier
+    - DELETE : delete in db the webpub
+        - query: 'id': id string in webpub metadata identifier
+    - GET : get the webpub
+        - query: 'id': id string in webpub metadata identifier
+        - no query and no body : returns an array of all publications in db
+- /feed
+    - GET : get the odps2 feed
+- /generate
+    - POST: parse and save an epub to the db and the web storage
+        - query : 'filename' : string name of the file
+        - body : file binary
+    - DELETE: remove the publication from web storage and db
+        - query : 'id' : string id of the publication
+- /storage
+    - POST : save the file in web storage
+        - query : 'filename' : string name of the file
+        - body : file binary
+    - DELETE: remove the file from web storage
+        - query : 'id' : string filename/id of the file
+
+
+## test
+
+    npm run test
