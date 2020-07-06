@@ -145,8 +145,8 @@ the server has 5 entry points
 - /publication
     - POST : save in db the publication
         - body: 'publication': [OPDSPublication](https://drafts.opds.io/opds-2.0#41-opds-publication)
-    - PUT : update in db the [publication](https://drafts.opds.io/opds-2.0#41-opds-publication)
-        - body: 'publication' : OPDSPublication
+    - PUT : update in db the [publication
+        - body: 'publication' : [OPDSPublication](https://drafts.opds.io/opds-2.0#41-opds-publication)
         - query: 'id': id string in publication metadata identifier
     - DELETE : delete in db the publication
         - query: 'id': id string in publication metadata identifier
@@ -163,7 +163,7 @@ the server has 5 entry points
         - query: 'id': id string in webpub metadata identifier
     - GET : get the webpub
         - query: 'id': id string in webpub metadata identifier
-        - no query and no body : returns an array of all publications in db
+        - no query and no body : returns an array of all webpubs in db
 - /feed
     - GET : get the odps2 feed
 - /generate
