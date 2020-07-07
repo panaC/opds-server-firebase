@@ -159,7 +159,7 @@ An OPDS feed is composed with several OPDSPublication
 
 ### /webpub
 
-Create, Read, Update and Delete an [OPDSPublication](https://github.com/readium/webpub-manifest)
+Create, Read, Update and Delete an [Readium Wepub Publication Manifest](https://github.com/readium/webpub-manifest)
 
 this http route allow to serve a webpub manifest without include it in an opdsFeed.
 A readium web publication manifest can't be added in an opdsFeed. It's should be converter and linked inside an OPDSPublication before publish it in the opds feed.
