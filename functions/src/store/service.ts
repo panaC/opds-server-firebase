@@ -39,12 +39,13 @@ export const getUrlFile = async (id: string) => {
     const [isExists] = await file.exists();
     if (isExists) {
 
-        const [{metadata: {filename}}] = await file.getMetadata();
+        const [meta] = await file.getMetadata();
+        const filename = meta?.metadata?.filename || "publication.zip";
 
         const [signedUrl] = await file.getSignedUrl({
             action: "read",
-            promptSaveAs: filename || "publication.zip",
-            expires: new Date().valueOf() + 60, // 60 seconds just the time to download it
+            promptSaveAs: filename,
+            expires: new Date().valueOf() + 3600, // 1hour, just the time to download it
             virtualHostedStyle: true,
         });
 
