@@ -140,30 +140,85 @@ and then execute it
 
 ## documentation
 
-the server has 5 entry points
+the server has 5 API entry points :
 
-- /publication
-    - POST : save in db the publication
+- 3 http routes with CRUD operations
+    - /publication
+    - /webpub
+    - /storage
+- 1 http route to publish the OPDS2 feed
+    - /feed
+- 1 experimental http route to parse and save en epub file
+    - /generate
+
+### /publication
+
+Create, Read, Update and Delete an [OPDSPublication](https://drafts.opds.io/opds-2.0#41-opds-publication)
+
+An OPDS feed is composed with several OPDSPublication
+
+### /webpub
+
+Create, Read, Update and Delete an [OPDSPublication](https://github.com/readium/webpub-manifest)
+
+this http route allow to serve a webpub manifest without include it in an opdsFeed.
+A readium web publication manifest can't be added in an opdsFeed. It's should be converter and linked inside an OPDSPublication before publish it in the opds feed.
+
+### /storage
+
+Create, Read, Update and Delete a file. The file is saved inside a google firebase storage bucket
+https://firebase.google.com/docs/storage/
+
+### /feed
+
+returns an [opds feed](https://drafts.opds.io/opds-2.0)
+
+close to the same behaviour of the feedbooks API https://catalog.feedbooks.com/catalog/index.json
+
+main features:
+- search: keep the query param navigation on search request
+- handle [facets](https://drafts.opds.io/opds-2.0#14-facets)
+- handle [groups](https://drafts.opds.io/opds-2.0#15-groups)
+    - 2 default groups:
+        - most downloaded
+        - most recent
+        - [subject](https://github.com/readium/webpub-manifest/tree/master/contexts/default#subjects) in metadata
+- handle [navigation](https://drafts.opds.io/opds-2.0#11-navigation)
+
+
+### /generate
+
+Experimental developement to parse and save an epub file.
+
+- parse the epub :
+- extract the cover
+- generate an OPDSPublication
+- save the cover and the epub file in cloud storage
+- fill the publication with download link and save it in database
+
+## API Reference :
+
+- /publication/{id}
+    - POST : save the publication in database
         - body: 'publication': [OPDSPublication](https://drafts.opds.io/opds-2.0#41-opds-publication)
-    - PUT : update in db the [publication
+    - PUT : update the publication in database
         - body: 'publication' : [OPDSPublication](https://drafts.opds.io/opds-2.0#41-opds-publication)
-        - query: 'id': id string in publication metadata identifier
-    - DELETE : delete in db the publication
-        - query: 'id': id string in publication metadata identifier
+    - DELETE : delete the publicatio in database
     - GET : get the publication
-        - query: 'id': id string in publication metadata identifier
-        - no query and no body : returns an array of all publications in db
-- /webpub
-    - POST : save in db the webpub
+        - no query and no body : returns an array of all publications in database
+- /webpub/{id}
+    - POST : save the webpub in database
         - body: 'webpub' : [R2Publication](https://github.com/readium/webpub-manifest)
-    - PUT : update in db the webpub
+    - PUT : update the webpub in database
         - body: 'webpub' : [R2Publication](https://github.com/readium/webpub-manifest)
-        - query: 'id': id string in webpub metadata identifier
-    - DELETE : delete in db the webpub
-        - query: 'id': id string in webpub metadata identifier
+    - DELETE : delete the RWPManifest in db 
     - GET : get the webpub
-        - query: 'id': id string in webpub metadata identifier
-        - no query and no body : returns an array of all webpubs in db
+        - no query and no body : returns an array of all webpubs in database
+- /storage/{id}
+    - POST : save the file in web storage
+        - query : 'filename' : string name of the file
+        - body : file binary
+    - DELETE: remove the file from web storage
 - /feed
     - GET : get the odps2 feed
 - /generate
@@ -172,13 +227,13 @@ the server has 5 entry points
         - body : file binary
     - DELETE: remove the publication from web storage and db
         - query : 'id' : string id of the publication
-- /storage
-    - POST : save the file in web storage
-        - query : 'filename' : string name of the file
-        - body : file binary
-    - DELETE: remove the file from web storage
-        - query : 'id' : string filename/id of the file
 
+
+## lexique
+
+[OPDSPublication](https://drafts.opds.io/opds-2.0#41-opds-publication) = publication OPDS2
+
+[R2Publication](https://github.com/readium/webpub-manifest) = Readium Webpub Publication Manifest
 
 ## test
 
