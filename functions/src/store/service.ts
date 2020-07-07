@@ -40,7 +40,7 @@ export const getUrlFile = async (id: string) => {
     if (isExists) {
 
         const [meta] = await file.getMetadata();
-        const filename = meta?.metadata?.filename || "publication.zip";
+        const filename = typeof meta?.metadata?.filename === "string" ? meta.metadata.filename as string : "publication.zip";
 
         const [signedUrl] = await file.getSignedUrl({
             action: "read",
