@@ -29,7 +29,7 @@ const webpubConverter: FirebaseFirestore.FirestoreDataConverter<IWebpubDb> = {
         }
 
         return {
-            publication: TaJsonDeserialize(obj.publication, R2Publication),
+            publication,
             modifiedTimestamp: obj.modifiedTimestamp,
             createTimestamp: obj.createTimestamp,
             popularityCounter: obj.popularityCounter,
