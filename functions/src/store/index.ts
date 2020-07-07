@@ -1,6 +1,6 @@
 import * as functions from "firebase-functions";
 import { response } from "../utils/response";
-import { create, delete_ } from "./controller";
+import { create, delete_, read } from "./controller";
 
 export const storeFunction = async (req: functions.https.Request, res: functions.Response<any>) => {
 
@@ -17,6 +17,10 @@ export const storeFunction = async (req: functions.https.Request, res: functions
 
             case "DELETE": {
                 return await delete_(req, res);
+            }
+
+            case "GET": {
+                return await read(req, res);
             }
 
             default: {

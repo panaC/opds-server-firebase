@@ -7,7 +7,7 @@ export const response = (res: functions.Response) =>
         res
             .status(status)
             .json(
-                status !== 200 ? {
+                status >= 400 ? {
                     error,
                     data,
                     status,

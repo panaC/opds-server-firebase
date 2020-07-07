@@ -8,6 +8,7 @@ import { JSON as TAJSON } from "ta-json-x";
 import { IPublicationDb } from "../db/interface/publication.interface";
 import { OPDSPublication } from "r2-opds-js/dist/es8-es2017/src/opds/opds2/opds2-publication";
 import { TaJsonSerialize } from "r2-lcp-js/dist/es8-es2017/src/serializable";
+import { basename } from "path";
 
 export const handlePublication = async (
     req: functions.https.Request,
@@ -16,7 +17,7 @@ export const handlePublication = async (
     method: string
 ) => {
     const send = response(res);
-    const pubStringified = req.body["publication"];
+    const pubStringified = Buffer.from(req.body).toString();
 
     let publicationParsedWithJSON: Object;
     let publicationParsed: OPDSPublication;
@@ -27,7 +28,7 @@ export const handlePublication = async (
 
         console.error("publication parsing error");
         console.error(e);
-        return send(400, "the value of 'publication' key is not a json object");
+        return send(400, "publication parsing error");
     }
 
     try {
@@ -62,7 +63,7 @@ export const create = async (req: functions.https.Request, res: functions.Respon
 export const update = async (req: functions.https.Request, res: functions.Response<any>) => {
 
     const send = response(res);
-    const id = req.query["id"];
+    const id = basename(req.path);
 
     if (typeof id === "string" && id) {
         return await handlePublication(req, res, async (publication) => {
@@ -77,7 +78,7 @@ export const update = async (req: functions.https.Request, res: functions.Respon
 export const read = async (req: functions.https.Request, res: functions.Response<any>) => {
 
     const send = response(res);
-    const id = req.query["id"];
+    const id = basename(req.path);
 
     if (id) {
 
@@ -117,7 +118,7 @@ export const read = async (req: functions.https.Request, res: functions.Response
 export const delete_ = async (req: functions.https.Request, res: functions.Response<any>) => {
 
     const send = response(res);
-    const id = req.query["id"];
+    const id = basename(req.path);
 
     if (typeof id === "string" && id) {
         

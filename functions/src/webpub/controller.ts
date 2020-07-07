@@ -8,6 +8,7 @@ import { Publication as R2Publication } from "r2-shared-js/dist/es8-es2017/src/m
 import { JSON as TAJSON } from "ta-json-x";
 import { IWebpubDb } from "../db/interface/webpub.interface";
 import { TaJsonSerialize } from "r2-lcp-js/dist/es8-es2017/src/serializable";
+import { basename } from "path";
 
 export const handleWebpub = async (
     req: functions.https.Request,
@@ -16,7 +17,7 @@ export const handleWebpub = async (
     method: string
 ) => {
     const send = response(res);
-    const webpubStringified = req.body["webpub"];
+    const webpubStringified = Buffer.from(req.body).toString();
 
     let webpubParsed: Object;
     let publicationParsed: R2Publication;
@@ -27,7 +28,7 @@ export const handleWebpub = async (
 
         console.error("webpub parsing error");
         console.error(e);
-        return send(400, "the value of 'webpub' key is not a json object");
+        return send(400, "webpub parsing error", e.toString());
     }
 
     try {
@@ -62,7 +63,7 @@ export const create = async (req: functions.https.Request, res: functions.Respon
 export const update = async (req: functions.https.Request, res: functions.Response<any>) => {
 
     const send = response(res);
-    const id = req.query["id"];
+    const id = basename(req.path);
 
     if (typeof id === "string" && id) {
         return await handleWebpub(req, res, async (publication) => {
@@ -77,7 +78,7 @@ export const update = async (req: functions.https.Request, res: functions.Respon
 export const read = async (req: functions.https.Request, res: functions.Response<any>) => {
 
     const send = response(res);
-    const id = req.query["id"];
+    const id = basename(req.path);
 
     if (id) {
 
@@ -117,7 +118,7 @@ export const read = async (req: functions.https.Request, res: functions.Response
 export const delete_ = async (req: functions.https.Request, res: functions.Response<any>) => {
 
     const send = response(res);
-    const id = req.query["id"];
+    const id = basename(req.path);
 
     if (typeof id === "string" && id) {
         

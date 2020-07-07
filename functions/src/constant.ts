@@ -14,6 +14,7 @@ export const serverHref = new URL(protocol + "://" + hostname + portInUrl + "/" 
 
 export const feedRoute = "/feed";
 export const publicationRoute = "/publication";
+export const storeRoute = "/store";
 
 export const selfHref = new URL(feedRoute, serverHref);
 export const selfHrefClone = () => new URL("", selfHref);
@@ -49,6 +50,9 @@ export const publicationHrefFn = (id: string) => {
 
     return u.toString();
 }
+
+export const storeHrefFn = (id: string) =>
+    new URL(storeRoute + "/" + id, selfHref).toString();
 
 export const LINK_TYPE = 'application/opds+json';
 

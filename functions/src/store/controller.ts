@@ -1,8 +1,7 @@
 import * as functions from "firebase-functions";
 import { response } from "../utils/response";
 import { basename } from "path";
-import { nanoid } from "nanoid";
-import { save, deleteFile } from "./service";
+import { save, deleteFile, getUrlFile } from "./service";
 
 export const create = async (req: functions.https.Request, res: functions.Response<any>) => {
 
@@ -22,11 +21,10 @@ export const create = async (req: functions.https.Request, res: functions.Respon
 
     const contentType = req.header("content-type") || "";
     
-    let filename = req.query["filename"];
+    let filename = req.query["filename"] || req.path;
     if (typeof filename === "string" && filename) {
 
-        filename = nanoid() + "." + basename(filename);
-        // const ext = extname(bname);
+        filename = basename(filename);
     } else {
 
         const ext = contentType === "application/epub+zip"
@@ -34,7 +32,7 @@ export const create = async (req: functions.https.Request, res: functions.Respon
             : contentType === "application/audiobook+zip"
                 ? "audiobook"
                 : "zip";
-        filename = nanoid() + "." + ext;
+        filename = "publication." + ext;
     }
 
     // https://firebase.google.com/docs/functions/http-events#read_values_from_the_request
@@ -50,7 +48,7 @@ export const create = async (req: functions.https.Request, res: functions.Respon
             try {
                 const data = await save(buffer, filename);
 
-                send(200, "", data);
+                send(201, "", data);
             } catch (e) {
                 send(500, e.toString(), e.stack);
             }
@@ -70,15 +68,33 @@ export const delete_ = async (req: functions.https.Request, res: functions.Respo
 
     const send = response(res);
 
-    let filename = req.query["id"];
-    if (typeof filename === "string" && filename) {
+    let id = basename(req.path);
+    if (typeof id === "string" && id) {
 
         try {
-            await deleteFile(filename);
-            send(200);
+            await deleteFile(id);
+            send(204);
         } catch (e) {
             send(500, e.toString(), e.stack);
         }
     }
+}
 
+export const read = async (req: functions.https.Request, res: functions.Response<any>) => {
+
+    const send = response(res);
+
+    let id = basename(req.path);
+    // console.log(id);
+    
+    if (typeof id === "string" && id) {
+
+        try {
+            const url = await getUrlFile(id);
+
+            res.redirect(307, url);
+        } catch (e) {
+            send(500, e.toString(), e.stack);
+        }
+    }
 }
