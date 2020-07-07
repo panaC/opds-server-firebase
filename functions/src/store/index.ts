@@ -2,7 +2,7 @@ import * as functions from "firebase-functions";
 import { response } from "../utils/response";
 import { create, delete_ } from "./controller";
 
-export const storageFunction = async (req: functions.https.Request, res: functions.Response<any>) => {
+export const storeFunction = async (req: functions.https.Request, res: functions.Response<any>) => {
 
     res.set('Access-Control-Allow-Origin', '*')
     const send = response(res);

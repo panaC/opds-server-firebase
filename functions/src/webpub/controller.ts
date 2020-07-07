@@ -43,7 +43,7 @@ export const handleWebpub = async (
 
     try {
         const publication = await callBack(publicationParsed);
-        return send(200, "", TaJsonSerialize(publication));
+        return send(201, "", TaJsonSerialize(publication));
     } catch (e) {
 
         console.error(method, publicationParsed);
@@ -123,7 +123,7 @@ export const delete_ = async (req: functions.https.Request, res: functions.Respo
         
         try {
             await deletePublicationInDb(decodeURI(id));
-            return send(200);
+            return send(204);
 
         } catch (e) {
 

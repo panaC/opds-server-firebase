@@ -6,7 +6,7 @@ import {
 import { IZip } from "r2-utils-js/dist/es8-es2017/src/_utils/zip/zip.d";
 import { streamToBufferPromise } from "r2-utils-js/dist/es8-es2017/src/_utils/stream/BufferUtils";
 
-import { save, deleteFile } from "../storage/service";
+import { save, deleteFile } from "../store/service";
 import { response } from "../utils/response";
 import { promises } from "fs";
 import { OPDSPublication } from "r2-opds-js/dist/es8-es2017/src/opds/opds2/opds2-publication";
