@@ -253,3 +253,4 @@ Experimental developement to parse and save an epub file.
     - support audiobook, lpf, ...
 - authentification not implemented
 - deploy and create an edrlab OPDSFeed
+- create and manage new test
