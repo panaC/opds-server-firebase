@@ -159,7 +159,7 @@ An OPDS feed is composed with several OPDSPublication
 
 ### /webpub
 
-Create, Read, Update and Delete an [Readium Wepub Publication Manifest](https://github.com/readium/webpub-manifest)
+Create, Read, Update and Delete a [Readium Wepub Publication Manifest](https://github.com/readium/webpub-manifest)
 
 this http route allow to serve a webpub manifest without include it in an opdsFeed.
 A readium web publication manifest can't be added in an opdsFeed. It's should be converter and linked inside an OPDSPublication before publish it in the opds feed.
@@ -180,7 +180,7 @@ main features:
 - handle [facets](https://drafts.opds.io/opds-2.0#14-facets)
 - handle [groups](https://drafts.opds.io/opds-2.0#15-groups)
     - 2 default groups:
-        - most downloaded
+        - most downloaded ( not link yet with the /store route )
         - most recent
         - [subject](https://github.com/readium/webpub-manifest/tree/master/contexts/default#subjects) in metadata
 - handle [navigation](https://drafts.opds.io/opds-2.0#11-navigation)
@@ -238,3 +238,18 @@ Experimental developement to parse and save an epub file.
 ## test
 
     npm run test
+
+
+## need improvement
+
+- feed opds
+    - Database pagination on publication opds feed
+        - not implemented in database query request
+    - most downloaded group returns the last publications
+        - need to link the GET on /store with the publication , how ?
+    - which title to set when browsing in an opds feed ?
+- Improve the epub parser
+    - bug on DELETE route
+    - support audiobook, lpf, ...
+- authentification not implemented
+- deploy and create an edrlab OPDSFeed
