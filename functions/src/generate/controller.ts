@@ -132,7 +132,7 @@ export const delete_ = async (req: functions.https.Request, res: functions.Respo
     console.log("DELETE");
     
 
-    let filename = req.query["id"];
+    let filename = req.query["id"] || basename(req.path);
     if (typeof filename === "string" && filename) {
 
         const id = decodeURI(filename);
