@@ -20,7 +20,7 @@ import { generateFonction } from "./generate";
 const webpub = https.onRequest(webpubFonction);
 const publication = https.onRequest(publicationFonction);
 const feed = https.onRequest(feedFn);
-const storage = https.onRequest(storeFunction);
+const store = https.onRequest(storeFunction);
 const generate = https.onRequest(generateFonction);
 
 export {
@@ -29,6 +29,6 @@ export {
     webpub,
     publication,
     feed,
-    storage,
+    store,
     generate,
 };
