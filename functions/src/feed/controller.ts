@@ -6,6 +6,7 @@ import { createFeed } from "./createFeed";
 import { TaJsonSerialize } from "r2-lcp-js/dist/es8-es2017/src/serializable";
 import { searchPublication } from "./db/search";
 import { IParsedQuery } from "./query.type";
+import { defaultPageTitle } from "../constant";
 // import { OPDSFeed } from "r2-opds-js/dist/es8-es2017/src/opds/opds2/opds2";
 
 export const searchRequest = async (query: IParsedQuery, res: functions.Response<any>) => {
@@ -14,7 +15,7 @@ export const searchRequest = async (query: IParsedQuery, res: functions.Response
 
     try {
 
-        const title = "??";
+        const title = query.pagetitle || query.title || query.query || defaultPageTitle;
         const publication = await searchPublication(query);
         const opdsFeed = await createFeed(publication, query, title);
 

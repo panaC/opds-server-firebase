@@ -4,13 +4,27 @@ import { createHomeFeed } from "./createFeed";
 import { TaJsonSerialize } from "r2-lcp-js/dist/es8-es2017/src/serializable";
 import * as qs from "qs";
 import { TQuery, IParsedQuery, TQueryAllowed } from "./query.type";
-import { queryAllowed } from "../constant";
-// import { OPDSFeed } from "r2-opds-js/dist/es8-es2017/src/opds/opds2/opds2";
+import { queryAllowed, queryQueryQMapping, isAGoodArray, queryPageTitle } from "../constant";
+
+const nor = (v: any): string | undefined => {
+
+    const str = (s: any) => {
+        if (s && typeof s === "string") {
+            return s as string;
+        }
+        return undefined;
+    }
+    
+    if (isAGoodArray(v)) {
+        return (v as any[]).reduce((_pv, cv) => str(cv), undefined);
+    }
+    return str(v);
+}
 
 export const pathToQuery = (path: string): TQuery => {
 
     const split = path.split("/");
-    const str = split.filter((s) => s);
+    const str = path[0] === "/" ? split.slice(1) : split;
     const twin = str.reduce((pv, cv, i, a) => i % 2 ? ({ ...pv, [a[i-1]]:cv }) : pv , {});
 
     return twin;
@@ -20,8 +34,14 @@ export const queryToQuery =
     (query: qs.ParsedQs): TQuery =>
         Object.entries(query)
             .reduce(
-                (pv, [key, value]) =>
-                    typeof value === "string" ? ({ ...pv, [key]: value }) : pv,
+                (pv, [key, value]) => {
+
+                    const v = nor(value);
+                    if (v) {
+                        return { ...pv, [key]: v};                        
+                    }
+                    return pv;
+                },
                 {},
             );
 
@@ -71,6 +91,14 @@ export const getFeed = async () => {
     }
 }
 
+const parseNb = (n: string, def = 0): number => {
+    const a = decodeURI(n);
+    const b = parseInt(a, 10);
+    const c = isNaN(b) || b < def ? def : b;
+
+    return c;
+}
+
 export const parseQuery = (query: TQuery): IParsedQuery => {
 
     let o: IParsedQuery = {};
@@ -86,41 +114,56 @@ export const parseQuery = (query: TQuery): IParsedQuery => {
             case queryAllowed.publisher:
             case queryAllowed.query:
             case queryAllowed.title:
-            case queryAllowed.subject:
+            case queryAllowed.subject: {
 
-                if (value && typeof value === "string") {
+                const v = nor(value);
+                if (v) {
                     // @ts-ignore
-                    o[key] = decodeURI(value);
+                    o[key] = decodeURI(v);
                 }
-
                 break;
-        
-            case queryAllowed.page:
+            }
 
-                if (value && typeof value === "string") {
-                    
-                    const a = decodeURI(value);
-                    const b = parseInt(a, 10);
-                    const c = isNaN(b) || b < 1 ? 1 : b;
-                    o.page = c;
+            case queryQueryQMapping: {
+
+                const v = nor(value);
+                if (v) {
+                    // @ts-ignore
+                    o[queryAllowed.query] = decodeURI(v);
                 }
-
                 break;
+            }
 
-            case queryAllowed.number:
+            case queryAllowed.page: {
 
-                if (value && typeof value === "string") {
-                    
-                    const a = decodeURI(value);
-                    const b = parseInt(a, 10);
-                    const c = isNaN(b) || b < 0 ? 0 : b;
-                    o.number = c;
+                const v = nor(value);
+                if (v) {
+                    o.page = parseNb(v, 1);
                 }
-
                 break;
+            }                
 
-            default:
+            case queryAllowed.number: {
+
+                const v = nor(value);
+                if (v) {
+                    o.number = parseNb(v, 0);
+                }
                 break;
+            }
+
+            case queryPageTitle: {
+
+                const v = nor(value);
+                if (v) {
+                    o[queryPageTitle] = decodeURI(v);
+                }
+                break;
+            }
+
+            default: {
+                // nothing
+            }
         }
     })
 

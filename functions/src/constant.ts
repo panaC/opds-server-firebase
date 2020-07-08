@@ -16,6 +16,8 @@ export const feedRoute = "/feed";
 export const publicationRoute = "/publication";
 export const storeRoute = "/store";
 
+export const defaultPageTitle = "feed";
+
 export const selfHref = new URL(feedRoute, serverHref);
 export const selfHrefClone = () => new URL("", selfHref);
 
@@ -30,6 +32,9 @@ export const queryAllowed = {
     number: "number",
     group: "group",
 };
+
+export const queryPageTitle = "pagetitle";
+export const queryQueryQMapping = "q";
 
 export const groupsAllowed = {
     mostRecent: "mostRecent",
