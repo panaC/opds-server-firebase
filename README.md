@@ -242,12 +242,6 @@ Experimental developement to parse and save an epub file.
 
 ## need improvement
 
-- feed opds
-    - Database pagination on publication opds feed
-        - not implemented in database query request
-    - most downloaded group returns the last publications
-        - need to link the GET on /store with the publication , how ?
-    - which title to set when browsing in an opds feed ?
 - Improve the epub parser
     - bug on DELETE route
     - support audiobook, lpf, ...
