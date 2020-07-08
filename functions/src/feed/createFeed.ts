@@ -1,5 +1,6 @@
 
 import { config } from "firebase-functions";
+import { JsonMap } from "r2-lcp-js/dist/es8-es2017/src/serializable";
 import { OPDSFeed } from "r2-opds-js/dist/es8-es2017/src/opds/opds2/opds2";
 import { OPDSGroup } from "r2-opds-js/dist/es8-es2017/src/opds/opds2/opds2-group";
 import { OPDSLink } from "r2-opds-js/dist/es8-es2017/src/opds/opds2/opds2-link";
@@ -7,17 +8,16 @@ import { OPDSMetadata } from "r2-opds-js/dist/es8-es2017/src/opds/opds2/opds2-me
 import { OPDSPublication } from "r2-opds-js/dist/es8-es2017/src/opds/opds2/opds2-publication";
 
 import {
-    groupsAllowed, feedHrefFn, isAGoodArray, LINK_TYPE, PUBLICATION_NUMBER_LIMIT, queryAllowed,
-    feedSearchHrefFn, selfHref, queryPageTitle,
+    feedHrefFn, feedSearchHrefFn, groupsAllowed, isAGoodArray, LINK_TYPE, queryAllowed,
+    queryPageTitle, selfHref,
 } from "../constant";
 import { distinctLanguage, distinctSubject } from "./db/distinct";
 import {
     getMostDownloadedPublicationFromDb, getMostRecentPublicationFromDb, getPromotePublicationFromDb,
     getSubjectPublicationFromDb,
 } from "./db/select";
-import { queryToPath } from "./service";
 import { IParsedQuery } from "./query.type";
-import { JsonMap } from "r2-lcp-js/dist/es8-es2017/src/serializable";
+import { queryToPath } from "./service";
 
 const createLink = (
     href: string, title?: string,
@@ -58,6 +58,8 @@ const createGroup = (
 export const createFeed = async (
     publication: OPDSPublication[],
     query: IParsedQuery,
+    nbPublication: number,
+    limit: number,
     title: string = config().server.name || "OPDS-SERVER",
 ): Promise<OPDSFeed> => {
 
@@ -78,7 +80,7 @@ export const createFeed = async (
         let lastLink: string = "";
 
         const page = query.page || 1;
-        const nbPages = Math.ceil(publication.length / PUBLICATION_NUMBER_LIMIT);
+        const nbPages = Math.ceil(nbPublication / limit);
 
         if (page < nbPages) {
             nextLink = feedHrefFn(
@@ -115,14 +117,14 @@ export const createFeed = async (
                 queryToPath(
                     query,
                     {
-                        [queryAllowed.page]: "0",
+                        [queryAllowed.page]: "1",
                     },
                 )
             );
         }
         opds.AddPagination(
-            publication.length,
-            publication.length < PUBLICATION_NUMBER_LIMIT ? publication.length : PUBLICATION_NUMBER_LIMIT,
+            nbPublication,
+            nbPublication < limit ? nbPublication : limit,
             page,
             nextLink,
             prevLink,
@@ -348,6 +350,7 @@ export const createHomeFeed = async (
 
     try {
         const subjects = await distinctSubject();
+        
         for await (const sub of subjects) {
 
             const subjectPub = await getSubjectPublicationFromDb(sub);

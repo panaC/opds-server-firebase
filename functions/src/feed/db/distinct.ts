@@ -26,13 +26,14 @@ export const distinctSubject = async () => {
     const snap = await publicationDb.select("metadataSubject").get();
     const docsArray = snap.docs;
     const dataArray = docsArray.map((v) => v.data());
+    
     const subSet = dataArray.reduce(
         (pv, cv) => {
-            // @ts-ignore
             const a = cv.metadataSubject;
             if (a && isAGoodArray(a)) {
-                a.forEach((sub) => sub ?? pv.add(sub));
+                a.forEach((sub) => sub && pv.add(sub));
             }
+
             return pv;
         },
         new Set<string>()

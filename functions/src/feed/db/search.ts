@@ -1,13 +1,14 @@
 import { IParsedQuery } from "../query.type";
 import { OPDSPublication } from "r2-opds-js/dist/es8-es2017/src/opds/opds2/opds2-publication";
 import { publicationDb } from "../../db/publication";
-import { groupsAllowed, algoliaEnabled, PUBLICATION_NUMBER_LIMIT } from "../../constant";
-import { IPublicationDb } from "../../db/interface/publication.interface";
+import { groupsAllowed, algoliaEnabled } from "../../constant";
 import { algoliaIndex } from "../../utils/algolia";
+import { IPublicationDb } from "../../db/interface/publication.interface";
 
-export const searchPublication = async (query: IParsedQuery): Promise<OPDSPublication[]> => {
+export const searchPublication = async (query: IParsedQuery, limit: number): Promise<[OPDSPublication[], number]> => {
 
     let publication = new Array<OPDSPublication>();
+    let nbPublication = 0;
 
     const queryFromQuery = query.query;
 
@@ -20,13 +21,13 @@ export const searchPublication = async (query: IParsedQuery): Promise<OPDSPublic
             const hits = search.hits;
 
             const pubPromise = hits
-                .slice(0, PUBLICATION_NUMBER_LIMIT)
+                .slice(0, limit)
                 .map(async (o) => (await publicationDb.doc(o.objectID).get()).data()?.publication)
 
             const pubNotFiltered = await Promise.all(pubPromise)
             const pub = pubNotFiltered.filter((p) => p) as OPDSPublication[];
 
-            return pub;
+            return [pub, pub.length];
         }
     } catch (e) {
         console.log("error to search in algolia");
@@ -34,8 +35,7 @@ export const searchPublication = async (query: IParsedQuery): Promise<OPDSPublic
 
     }
 
-    // const page = query.page || 1;
-    const number = query.number || 0;
+    const page = query.page || 1;
     const title = query.title;
     const author = query.author;
     const subject = query.subject;
@@ -43,15 +43,7 @@ export const searchPublication = async (query: IParsedQuery): Promise<OPDSPublic
     const language = query.language;
     const group = query.group;
 
-    // FIX IT 
-    // let dbQuery = publicationDb;
-    // .startAt((page - 1) * PUBLICATION_NUMBER_LIMIT)
-    // .endAt(page * PUBLICATION_NUMBER_LIMIT);
-
     let dbQuery = publicationDb as FirebaseFirestore.Query<IPublicationDb>;
-    if (number) {
-        dbQuery = dbQuery.limit(number);
-    }
 
     if (group) {
         if (group === groupsAllowed.mostDownloaded) {
@@ -81,14 +73,30 @@ export const searchPublication = async (query: IParsedQuery): Promise<OPDSPublic
         dbQuery = dbQuery.where("metadataLanguage", "array-contains", language);
     }
 
-    const snap = await dbQuery.get();
-
-    if (!snap.empty) {
-        publication = snap.docs
-            .map(
-                (d) => d.data()?.publication,
-            )
-            .filter((v) => v) as OPDSPublication[];
+    {
+        const snap = await dbQuery.get();
+        nbPublication = snap.size;
     }
-    return publication;
+
+    const offset = (page - 1) * limit;
+    if (offset) {
+        dbQuery = dbQuery.offset(offset);
+    }
+    if (limit) {
+        dbQuery = dbQuery.limit(limit);
+    }
+
+    {
+        const snap = await dbQuery.get();
+        if (!snap.empty) {
+            publication = snap.docs
+                .map(
+                    (d) => d.data()?.publication,
+                )
+                .filter((v) => v) as OPDSPublication[];
+        }
+    }
+
+
+    return [publication, nbPublication];
 }
