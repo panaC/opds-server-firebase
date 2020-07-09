@@ -3,6 +3,9 @@ import * as functions from "firebase-functions";
 import { response } from "../utils/response";
 import { generatePublication, delete_ } from "./controller";
 
+// EXPERIMENTAL
+// Not for a production use
+
 export const generateFonction = async (req: functions.https.Request, res: functions.Response<any>) => {
 
     res.set('Access-Control-Allow-Origin', '*')
@@ -16,6 +19,9 @@ export const generateFonction = async (req: functions.https.Request, res: functi
                 return await generatePublication(req, res);
             }
 
+            // TODO
+            // Bug on delete function
+            // infinite loop
             case "DELETE": {
                 return await delete_(req, res);
             }
