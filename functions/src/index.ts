@@ -12,7 +12,6 @@ initGlobalConverters_SHARED();
 
 import { webpubFonction } from "./webpub";
 import { feedFn, sync } from "./feed";
-import { addMessage} from "./addMessage";
 import { publicationFonction } from "./publication";
 import { storeFunction } from "./store";
 import { generateFonction } from "./generate";
@@ -25,7 +24,6 @@ const generate = https.onRequest(generateFonction);
 
 export {
     sync,
-    addMessage,
     webpub,
     publication,
     feed,
