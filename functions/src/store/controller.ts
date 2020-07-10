@@ -41,9 +41,10 @@ export const create = async (req: functions.https.Request, res: functions.Respon
     if (Buffer.isBuffer(buffer)) {
         console.log("buffer loaded");
     
-        const magic = buffer.readUIntBE(0, 4);
-        if (magic === 0x504B0304) {
-            console.log("Is a zip file");
+        // disable magic condition : /store can accept zip and all image formats (jpg, png, gif, ...)
+        // const magic = buffer.readUIntBE(0, 4);
+        // if (magic === 0x504B0304) {
+        //     console.log("Is a zip file");
 
             try {
                 const data = await save(buffer, filename);
@@ -53,11 +54,11 @@ export const create = async (req: functions.https.Request, res: functions.Respon
                 send(500, e.toString(), e.stack);
             }
 
-        } else {
-            console.log("isn't a zip file");
+        // } else {
+        //     console.log("isn't a zip file");
 
-            send(400, "the file uploaded is not a zip");
-        }
+        //     send(400, "the file upf loaded is not a zip");
+        // }
     } else {
         send(400, "not a valid file uploaded");
     }
