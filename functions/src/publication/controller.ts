@@ -13,6 +13,7 @@ import {
     deletePublicationInDb, getAllPublication, getPublicationInDb, savePublicationInDb,
     updatePublicationInDb,
 } from "./service";
+import { extractBearerToken, isAuthentified } from "../utils/auth";
 
 // import { writeFileSync } from "fs";
 
@@ -24,12 +25,18 @@ export const handlePublication = async (
 ) => {
     const send = response(res);
 
-    // console.log("body", req.body);
-    // console.log("rawbody", req.rawBody);
-    // console.log("req headers", req.headers);
-    // console.log("req method", req.method);
-    // console.log("req params", req.params);
-    // console.log("req query", req.query);
+    console.log("body", req.body);
+    console.log("rawbody", req.rawBody);
+    console.log("req headers", req.headers);
+    console.log("req method", req.method);
+    console.log("req params", req.params);
+    console.log("req query", req.query);
+    console.log("token", extractBearerToken(req.headers.authorization));
+
+    const auth = await isAuthentified(req.headers.authorization);
+    if (!auth) {
+        return send(401, "not authentified");
+    }
 
     let publicationParsedWithJSON: Object;
     let publicationParsed: OPDSPublication;
@@ -157,6 +164,11 @@ export const delete_ = async (req: functions.https.Request, res: functions.Respo
 
     const send = response(res);
     const id = basename(req.path);
+
+    const auth = await isAuthentified(req.headers.authorization);
+    if (!auth) {
+        return send(401, "not authentified");
+    }
 
     if (typeof id === "string" && id) {
         

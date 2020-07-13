@@ -13,6 +13,7 @@ import {
     deletePublicationInDb, getAllPublication, getPublicationInDb, savePublicationInDb,
     updatePublicationInDb,
 } from "./service";
+import { isAuthentified } from "../utils/auth";
 
 export const handleWebpub = async (
     req: functions.https.Request,
@@ -21,6 +22,10 @@ export const handleWebpub = async (
     method: string
 ) => {
     const send = response(res);
+    const auth = await isAuthentified(req.headers.authorization);
+    if (!auth) {
+        return send(401, "not authentified");
+    }
 
     let webpubParsedWithJson: Object;
     let publicationParsed: R2Publication;
@@ -148,6 +153,11 @@ export const delete_ = async (req: functions.https.Request, res: functions.Respo
 
     const send = response(res);
     const id = basename(req.path);
+
+    const auth = await isAuthentified(req.headers.authorization);
+    if (!auth) {
+        return send(401, "not authentified");
+    }
 
     if (typeof id === "string" && id) {
         

@@ -2,6 +2,7 @@ import * as functions from "firebase-functions";
 import { response } from "../utils/response";
 import { basename } from "path";
 import { save, deleteFile, getUrlFile } from "./service";
+import { isAuthentified } from "../utils/auth";
 
 export const create = async (req: functions.https.Request, res: functions.Response<any>) => {
 
@@ -18,6 +19,11 @@ export const create = async (req: functions.https.Request, res: functions.Respon
     // console.log("req method", req.method);
     // console.log("req params", req.params);
     // console.log("req query", req.query);
+;
+    const auth = await isAuthentified(req.headers.authorization);
+    if (!auth) {
+        return send(401, "not authentified");
+    }
 
     const contentType = req.header("content-type") || "";
     
@@ -68,6 +74,10 @@ export const create = async (req: functions.https.Request, res: functions.Respon
 export const delete_ = async (req: functions.https.Request, res: functions.Response<any>) => {
 
     const send = response(res);
+    const auth = await isAuthentified(req.headers.authorization);
+    if (!auth) {
+        return send(401, "not authentified");
+    }
 
     let id = basename(req.path);
     if (typeof id === "string" && id) {

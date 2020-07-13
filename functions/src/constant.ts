@@ -67,3 +67,4 @@ export const isAGoodArray = (a: any) => {
 
 export const PUBLICATION_NUMBER_LIMIT = config().publicationLimit || 50;
 
+export const DEFAULT_TOKEN = "DEFAULT_TOKEN";
