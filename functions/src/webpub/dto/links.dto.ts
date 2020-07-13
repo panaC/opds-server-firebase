@@ -14,7 +14,7 @@ import "reflect-metadata";
 export class LinksDto {
 
   @IsNotEmpty()
-  @IsUrl()
+  @IsUrl({ require_tld: false}) // accept localhost
   href!: string;
 
   @IsOptional()
