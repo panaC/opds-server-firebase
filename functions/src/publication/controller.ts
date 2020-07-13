@@ -1,14 +1,20 @@
-import * as functions from "firebase-functions";
 import { plainToClass } from "class-transformer";
-import { PublicationDto } from "./dto/publication.dto";
 import { validateOrReject } from "class-validator";
-import { response } from "../utils/response"
-import { savePublicationInDb, getPublicationInDb, getAllPublication, updatePublicationInDb, deletePublicationInDb } from "./service";
-import { JSON as TAJSON } from "ta-json-x";
-import { IPublicationDb } from "../db/interface/publication.interface";
-import { OPDSPublication } from "r2-opds-js/dist/es8-es2017/src/opds/opds2/opds2-publication";
-import { TaJsonSerialize } from "r2-lcp-js/dist/es8-es2017/src/serializable";
+import * as functions from "firebase-functions";
 import { basename } from "path";
+import { TaJsonDeserialize, TaJsonSerialize } from "r2-lcp-js/dist/es8-es2017/src/serializable";
+import { OPDSPublication } from "r2-opds-js/dist/es8-es2017/src/opds/opds2/opds2-publication";
+import { JSON as TAJSON } from "ta-json-x";
+
+import { IPublicationDb } from "../db/interface/publication.interface";
+import { response } from "../utils/response";
+import { PublicationDto } from "./dto/publication.dto";
+import {
+    deletePublicationInDb, getAllPublication, getPublicationInDb, savePublicationInDb,
+    updatePublicationInDb,
+} from "./service";
+
+// import { writeFileSync } from "fs";
 
 export const handlePublication = async (
     req: functions.https.Request,
@@ -17,13 +23,45 @@ export const handlePublication = async (
     method: string
 ) => {
     const send = response(res);
-    const pubStringified = Buffer.from(req.body).toString();
+
+    // console.log("body", req.body);
+    // console.log("rawbody", req.rawBody);
+    // console.log("req headers", req.headers);
+    // console.log("req method", req.method);
+    // console.log("req params", req.params);
+    // console.log("req query", req.query);
 
     let publicationParsedWithJSON: Object;
     let publicationParsed: OPDSPublication;
+    let pubStringified: string;
     try {
-        publicationParsedWithJSON = JSON.parse(pubStringified);
-        publicationParsed = TAJSON.parse(pubStringified, OPDSPublication);
+
+        const body = req.body;
+
+        if (Buffer.isBuffer(body)) {
+            pubStringified = body.toString();
+
+            publicationParsedWithJSON = JSON.parse(pubStringified);
+            publicationParsed = TAJSON.parse(pubStringified, OPDSPublication)
+
+        } else if (typeof body === "string") {
+            pubStringified = body;
+
+            publicationParsedWithJSON = JSON.parse(pubStringified);
+            publicationParsed = TAJSON.parse(pubStringified, OPDSPublication)
+
+        } else if (typeof body === "object") {
+
+            publicationParsedWithJSON = body;
+            publicationParsed = TaJsonDeserialize(body, OPDSPublication);
+
+        } else {
+            throw new Error("unknown body type");
+        }
+
+        // debug only
+        // writeFileSync("./test.json", JSON.stringify(publicationParsedWithJSON));
+
     } catch (e) {
 
         console.error("publication parsing error");

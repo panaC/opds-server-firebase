@@ -1,14 +1,18 @@
-import * as functions from "firebase-functions";
 import { plainToClass } from "class-transformer";
-import { WebpubDto } from "./dto/webpub.dto";
 import { validateOrReject } from "class-validator";
-import { response } from "../utils/response"
-import { savePublicationInDb, getPublicationInDb, getAllPublication, updatePublicationInDb, deletePublicationInDb } from "./service";
+import * as functions from "firebase-functions";
+import { basename } from "path";
+import { TaJsonDeserialize, TaJsonSerialize } from "r2-lcp-js/dist/es8-es2017/src/serializable";
 import { Publication as R2Publication } from "r2-shared-js/dist/es8-es2017/src/models/publication";
 import { JSON as TAJSON } from "ta-json-x";
+
 import { IWebpubDb } from "../db/interface/webpub.interface";
-import { TaJsonSerialize } from "r2-lcp-js/dist/es8-es2017/src/serializable";
-import { basename } from "path";
+import { response } from "../utils/response";
+import { WebpubDto } from "./dto/webpub.dto";
+import {
+    deletePublicationInDb, getAllPublication, getPublicationInDb, savePublicationInDb,
+    updatePublicationInDb,
+} from "./service";
 
 export const handleWebpub = async (
     req: functions.https.Request,
@@ -17,13 +21,38 @@ export const handleWebpub = async (
     method: string
 ) => {
     const send = response(res);
-    const webpubStringified = Buffer.from(req.body).toString();
 
-    let webpubParsed: Object;
+    let webpubParsedWithJson: Object;
     let publicationParsed: R2Publication;
+    let pubStringified: string;
     try {
-        webpubParsed = JSON.parse(webpubStringified);
-        publicationParsed = TAJSON.parse(webpubStringified, R2Publication);
+
+        const body = req.body;
+
+        if (Buffer.isBuffer(body)) {
+            pubStringified = body.toString();
+
+            webpubParsedWithJson = JSON.parse(pubStringified);
+            publicationParsed = TAJSON.parse(pubStringified, R2Publication)
+
+        } else if (typeof body === "string") {
+            pubStringified = body;
+
+            webpubParsedWithJson = JSON.parse(pubStringified);
+            publicationParsed = TAJSON.parse(pubStringified, R2Publication)
+
+        } else if (typeof body === "object") {
+
+            webpubParsedWithJson = body;
+            publicationParsed = TaJsonDeserialize(body, R2Publication);
+
+        } else {
+            throw new Error("unknown body type");
+        }
+
+        // debug only
+        // writeFileSync("./test.json", JSON.stringify(publicationParsedWithJSON));
+
     } catch (e) {
 
         console.error("webpub parsing error");
@@ -32,7 +61,7 @@ export const handleWebpub = async (
     }
 
     try {
-        const webpubClass = plainToClass(WebpubDto, webpubParsed);
+        const webpubClass = plainToClass(WebpubDto, webpubParsedWithJson);
         await validateOrReject(webpubClass);
 
     } catch (e) {
