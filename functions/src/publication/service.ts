@@ -20,7 +20,7 @@ const addSelfLink = (publication: OPDSPublication, pubId: string) => {
 
 export const savePublicationInDb = async (publication: OPDSPublication): Promise<IPublicationDb["publication"]> => {
     
-    const pubId = publication.Metadata.Identifier = publication.Metadata.Identifier || nanoid();
+    const pubId = publication.Metadata.Identifier = (nanoid() + "_" + (publication.Metadata.Identifier || "pubId"));
 
     addSelfLink(publication, pubId);
 

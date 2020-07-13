@@ -6,7 +6,8 @@ import { TaJsonSerialize } from "r2-lcp-js/dist/es8-es2017/src/serializable";
 
 export const savePublicationInDb = async (publication: R2Publication): Promise<IWebpubDb["publication"]> => {
     
-    const pubId = publication.Metadata.Identifier = publication.Metadata.Identifier || nanoid();
+    const pubId = publication.Metadata.Identifier = (nanoid() + "_" + (publication.Metadata.Identifier || "pubId"));
+
     const doc: IWebpubDb = {
         popularityCounter: 0,
         publication: publication,
