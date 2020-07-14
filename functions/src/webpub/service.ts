@@ -2,7 +2,7 @@ import { Publication as R2Publication } from "r2-shared-js/dist/es8-es2017/src/m
 import { webpubDb } from "../db/webpub";
 import { IWebpubDb } from "../db/interface/webpub.interface";
 import { nanoid } from "nanoid";
-import { TaJsonSerialize } from "r2-lcp-js/dist/es8-es2017/src/serializable";
+import { webpubConverter } from "../db/webpub"
 
 export const savePublicationInDb = async (publication: R2Publication): Promise<IWebpubDb["publication"]> => {
     
@@ -47,18 +47,18 @@ export const updatePublicationInDb = async (id: string, publication: R2Publicati
     const ref = webpubDb.doc(id);
     const document = await ref.get();
     if (document.exists && document.data()) {
+
+        publication.Metadata.Identifier = id;
+
         const data = document.data() as IWebpubDb; // bad infer
         const doc: IWebpubDb = {
             ...data,
             popularityCounter: typeof data.popularityCounter === "number" ? data.popularityCounter + 1 : 0,
             modifiedTimestamp: Date.now(),
-            // firestore doesn't call 'toFirestore' converter on update request !!
-            // need to force cast to any
-            // TODO how to improve it ?
-            publication: TaJsonSerialize(publication) as any,
+            publication: publication,
         }
 
-        await ref.update(doc);
+        await ref.update(webpubConverter.toFirestore(doc));
 
         return doc.publication;
     } else {

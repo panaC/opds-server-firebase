@@ -3,7 +3,7 @@ import { IWebpubDb } from "./interface/webpub.interface";
 import { Publication as R2Publication } from "r2-shared-js/dist/es8-es2017/src/models/publication";
 import { TaJsonSerialize, TaJsonDeserialize } from "r2-lcp-js/dist/es8-es2017/src/serializable";
 
-const webpubConverter: FirebaseFirestore.FirestoreDataConverter<IWebpubDb> = {
+export const webpubConverter: FirebaseFirestore.FirestoreDataConverter<IWebpubDb> = {
     toFirestore: (obj) => {
         // update fonction doesn't call this function , why !!?!!
         // wherase set function works
