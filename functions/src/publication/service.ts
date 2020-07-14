@@ -83,7 +83,8 @@ export const updatePublicationInDb = async (id: string, publication: OPDSPublica
     
         const data = document.data() as IPublicationDb; // bad infer
 
-        addSelfLink(publication, publication.Metadata.Identifier);
+        publication.Metadata.Identifier = id;
+        addSelfLink(publication, id);
 
         if (algoliaEnabled) {
 
