@@ -10,7 +10,6 @@ import testFactory from "firebase-functions-test";
 // import { exit } from "process";
 import { TaJsonDeserialize } from "r2-lcp-js/dist/es8-es2017/src/serializable";
 import { Publication as R2Publication } from "r2-shared-js/dist/es8-es2017/src/models/publication";
-import { JSON as TAJSON } from "ta-json-x";
 
 import { IWebpubDb } from "../src/db/interface/webpub.interface";
 import { webpubDb } from "../src/db/webpub";
@@ -57,6 +56,8 @@ const webpub = {
 describe("/webpub functions", () => {
 
   let myFonctions: { webpub: HttpsFunction };
+  let pubId: string;
+  let pub: any;
   before(() => {
     // Require index.js and save the exports inside a namespace called myFunctions.
     // This includes our cloud functions, which can now be accessed at myFunctions.makeUppercase
@@ -78,7 +79,7 @@ describe("/webpub functions", () => {
     let status: number;
     let body: any;
     // A fake request object, with req.query.text set to 'input'
-    const req: any = { body: { webpub: TAJSON.stringify(webpub) }, method: "POST" };
+    const req: any = { body: webpub, method: "POST", headers: { authorization: "Bearer DEFAULT_TOKEN" } };
     // A fake response object, with a stubbed redirect function which does some assertions
     const res: any = {
       set: (...arg: any) => {
@@ -93,6 +94,7 @@ describe("/webpub functions", () => {
       json: (_body: any) => {
         // console.log("body", _body);
         body = _body;
+        pub = body;
         return res;
       }
     };
@@ -102,19 +104,39 @@ describe("/webpub functions", () => {
       await myFonctions.webpub(req, res);
     });
 
-    it("code 200", () => {
-      assert.equal(status, 200);
+    it("code 201", () => {
+      assert.equal(status, 201);
     });
 
     it("body returns publication", () => {
-      assert.deepEqual(normalize(body), normalize(webpub));
+
+      // console.log("BODY", body, body.metadata, body.metadata.identifier);
+
+      try {
+        pubId = body.metadata.identifier;
+      } catch (e) {
+
+        console.log("#######");
+        console.log("#######");
+        console.log("#######");
+        console.log("#######");
+
+        console.log(e);
+        
+        console.log("#######");
+        console.log("#######");
+        console.log("#######");
+        
+      }
+      
+      assert.deepEqual(body.readingOrder, webpub.readingOrder);
     });
 
     it("publication in DB", async () => {
 
-      const dataFromDb = await (await db.doc(webpub.metadata.identifier).get()).data()?.publication;
+      const dataFromDb = await (await db.doc(pubId).get()).data()?.publication;
 
-      assert.deepEqual(dataFromDb, normalize(webpub));
+      assert.deepEqual(normalize(body), dataFromDb);
 
     });
 
@@ -124,27 +146,27 @@ describe("/webpub functions", () => {
 
     let status: number;
     let body: string = "{}";
-    // A fake request object, with req.query.text set to 'input'
-    const req: any = { query: { id: webpub.metadata.identifier }, method: "GET" };
-    // A fake response object, with a stubbed redirect function which does some assertions
-    const res: any = {
-      set: (...arg: any) => {
-        // console.log("set", ...arg);
-        return res;
-      },
-      status: (code: number) => {
-        // console.log("code", code);
-        status = code;
-        return res;
-      },
-      json: (_body: any) => {
-        // console.log("body", _body);
-        body = _body;
-        return res;
-      }
-    };
-
+    
     it("run GET", async () => {
+      // A fake request object, with req.query.text set to 'input'
+      const req: any = { path: "/" + pubId, method: "GET" };;
+      // A fake response object, with a stubbed redirect function which does some assertions
+      const res: any = {
+        set: (...arg: any) => {
+          // console.log("set", ...arg);
+          return res;
+        },
+        status: (code: number) => {
+          // console.log("code", code);
+          status = code;
+          return res;
+        },
+        json: (_body: any) => {
+          // console.log("body", _body);
+          body = _body;
+          return res;
+        }
+      };
 
       await myFonctions.webpub(req, res);
     });
@@ -154,7 +176,7 @@ describe("/webpub functions", () => {
     });
 
     it("body returns publication", () => {
-      assert.deepEqual(normalize(body), normalize(webpub));
+      assert.deepEqual(body, pub);
     });
 
   });
@@ -163,43 +185,43 @@ describe("/webpub functions", () => {
 
     let status: number;
     let body: string = "{}";
-    // A fake request object, with req.query.text set to 'input'
-    const req: any = { query: { id: webpub.metadata.identifier }, body: { webpub: TAJSON.stringify(webpub) }, method: "PUT" };
-    // A fake response object, with a stubbed redirect function which does some assertions
-    const res: any = {
-      set: (...arg: any) => {
-        // console.log("set", ...arg);
-        return res;
-      },
-      status: (code: number) => {
-        // console.log("code", code);
-        status = code;
-        return res;
-      },
-      json: (_body: any) => {
-        // console.log("body", _body);
-        body = _body;
-        return res;
-      }
-    };
-
+    
     it("run UPDATE", async () => {
+      // A fake request object, with req.query.text set to 'input'
+      const req: any = { path: "/" + pubId, body: webpub, method: "PUT", headers: { authorization: "Bearer DEFAULT_TOKEN"} };
+      // A fake response object, with a stubbed redirect function which does some assertions
+      const res: any = {
+        set: (...arg: any) => {
+          // console.log("set", ...arg);
+          return res;
+        },
+        status: (code: number) => {
+          // console.log("code", code);
+          status = code;
+          return res;
+        },
+        json: (_body: any) => {
+          // console.log("body", _body);
+          body = _body;
+          return res;
+        }
+      };
 
       await myFonctions.webpub(req, res);
     });
 
-    it("code 200", () => {
-      assert.equal(status, 200);
+    it("code 201", () => {
+      assert.equal(status, 201);
     });
 
     it("body returns publication", () => {
-      assert.deepEqual(normalize(body), normalize(webpub));
+      assert.deepEqual(body, pub);
     });
 
     it("publication in DB", async () => {
 
-      const dataFromDb = await (await db.doc(webpub.metadata.identifier).get()).data()?.publication;
-      assert.deepEqual(dataFromDb, normalize(webpub));
+      const dataFromDb = await (await db.doc(pubId).get()).data()?.publication;
+      assert.deepEqual(dataFromDb, normalize(body));
 
     });
 
@@ -209,33 +231,33 @@ describe("/webpub functions", () => {
 
     let status: number;
     let body: string = "{}";
-    // A fake request object, with req.query.text set to 'input'
-    const req: any = { query: { id: webpub.metadata.identifier }, method: "DELETE" };
-    // A fake response object, with a stubbed redirect function which does some assertions
-    const res: any = {
-      set: (...arg: any) => {
-        // console.log("set", ...arg);
-        return res;
-      },
-      status: (code: number) => {
-        // console.log("code", code);
-        status = code;
-        return res;
-      },
-      json: (_body: any) => {
-        // console.log("body", _body);
-        body = _body;
-        return res;
-      }
-    };
-
+    
     it("run DELETE", async () => {
+      // A fake request object, with req.query.text set to 'input'
+      const req: any = { path: "/" + pubId, headers: { authorization: "Bearer DEFAULT_TOKEN" }, method: "DELETE" };
+      // A fake response object, with a stubbed redirect function which does some assertions
+      const res: any = {
+        set: (...arg: any) => {
+          // console.log("set", ...arg);
+          return res;
+        },
+        status: (code: number) => {
+          // console.log("code", code);
+          status = code;
+          return res;
+        },
+        json: (_body: any) => {
+          // console.log("body", _body);
+          body = _body;
+          return res;
+        }
+      };
 
       await myFonctions.webpub(req, res);
     });
 
-    it("code 200", () => {
-      assert.equal(status, 200);
+    it("code 204", () => {
+      assert.equal(status, 204);
     });
 
     it("body returns publication", () => {
@@ -244,7 +266,7 @@ describe("/webpub functions", () => {
 
     it("publication in DB", async () => {
 
-      const dataFromDb = await (await db.doc(webpub.metadata.identifier).get()).data()?.publication;
+      const dataFromDb = await (await db.doc(pubId).get()).data()?.publication;
       assert.equal(dataFromDb, undefined);
 
     });
