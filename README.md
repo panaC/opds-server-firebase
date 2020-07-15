@@ -2,11 +2,19 @@
 
 readium OPDS2 publication server built on Google Firebase backend.
 
-The aims of this project is to bootstrap this server to make your own ODPS2 server.
+The aims of this project is to bootstrap this server to make your own OPDS2 publication server.
 It's useful for any editor wishing broadcast his publication to a readium standard format [opds2](https://drafts.opds.io/opds-2.0).
 It's also useful to create your personnal publication server usable together with [Thorium reader](https://www.edrlab.org/software/thorium-reader/) for example.
 
-### why firebase
+# how it's works ?
+
+1. deploy on firebase the server
+1. upload your files (epub, cover, ...)
+1. create and upload several [OPDSPublication](https://drafts.opds.io/opds-2.0#41-opds-publication)
+1. access to the /feed route
+1. your OPDSFeed is now accessible to everyone
+
+### firebase
 
 I choose to used firebase to simply deploy the server on the web.
 
@@ -30,9 +38,8 @@ You can see the price of each firebase features. https://firebase.google.com/pri
 - Clood functions
 - firestore
 - storage
-- authentification (not yet implemented)
 
-the main entry point is the https request.
+the main entry point is the https cloud function (API REST).
 
 ### full text search
 
@@ -42,10 +49,19 @@ https://firebase.google.com/docs/firestore/solutions/search
 
 To use algolia we need to create an account in their website. Algolia is free up to a limit but like firebase, the limit is high.
 
+### authentification
+
+to secure the create, update and delete method in /publication, /webpub and /store routes. There is a basic authentification to had in header.
+The authentification is based on a "Bearer" token.
+
+you sould add in header : "Authorization : Bearer YOUR_TOKEN"
+By default : YOUR_TOKEN = DEFAULT_TOKEN
+
+and can be changed in /auth route.
+
 ## bootstrap this project
 
 if you want personalise the server. You have just to fork it and make your changes. This project is a foundation to personalise your own OPDS2 feed.
-
 
 ## setup
 
@@ -140,7 +156,7 @@ and then execute it
 
 ## documentation
 
-the server has 5 API entry points :
+the server has 6 API entry points :
 
 - 3 http routes with CRUD operations
     - /publication
@@ -148,8 +164,18 @@ the server has 5 API entry points :
     - /storage
 - 1 http route to publish the OPDS2 feed
     - /feed
+- 1 http route to update the admin token
+    - /auth
 - 1 experimental http route to parse and save en epub file
     - /generate
+
+### route hierarchy
+
+- /feed : public entry point to serve the opdsFeed
+    - /publication : upload an [OPDSPublication](https://drafts.opds.io/opds-2.0#41-opds-publication) to expose on /feed
+        - /webpub : upload a [Readium Wepub Publication Manifest](https://github.com/readium/webpub-manifest) to expose as ressource in an OPDSPublication
+        - /store : upload any file to the cloud storage
+- /auth : update the admin token authentification
 
 ### /publication
 
@@ -185,10 +211,15 @@ main features:
         - [subject](https://github.com/readium/webpub-manifest/tree/master/contexts/default#subjects) in metadata
 - handle [navigation](https://drafts.opds.io/opds-2.0#11-navigation)
 
+### /auth
+
+update the admin token in database
 
 ### /generate
 
-Experimental developement to parse and save an epub file.
+*DON'T USED : experimental feature*
+
+Parse and save an epub file.
 
 - parse the epub :
 - extract the cover
@@ -201,26 +232,38 @@ Experimental developement to parse and save an epub file.
 - /publication/{id}
     - POST : save the publication in database
         - body: 'publication': [OPDSPublication](https://drafts.opds.io/opds-2.0#41-opds-publication)
+        - header : authorization : Bearer token
     - PUT : update the publication in database
         - body: 'publication' : [OPDSPublication](https://drafts.opds.io/opds-2.0#41-opds-publication)
+        - header : authorization : Bearer token
     - DELETE : delete the publicatio in database
+        - header : authorization : Bearer token
     - GET : get the publication
         - no query and no body : returns an array of all publications in database
 - /webpub/{id}
     - POST : save the webpub in database
         - body: 'webpub' : [R2Publication](https://github.com/readium/webpub-manifest)
+        - header : authorization : Bearer token
     - PUT : update the webpub in database
         - body: 'webpub' : [R2Publication](https://github.com/readium/webpub-manifest)
+        - header : authorization : Bearer token
     - DELETE : delete the RWPManifest in db 
+        - header : authorization : Bearer token
     - GET : get the webpub
         - no query and no body : returns an array of all webpubs in database
 - /storage/{id}
     - POST : save the file in web storage
         - query : 'filename' : string name of the file
         - body : file binary
+        - header : authorization : Bearer token
     - DELETE: remove the file from web storage
+        - header : authorization : Bearer token
 - /feed
     - GET : get the odps2 feed
+- /auth
+    - POST : update the admin token in database
+        - body param (x-www-form-urlencoded) : token : YOUR_NEW_TOKEN
+        - header : authorization : Bearer token
 - /generate
     - POST: parse and save an epub to the db and the web storage
         - query : 'filename' : string name of the file
@@ -229,22 +272,64 @@ Experimental developement to parse and save an epub file.
         - query : 'id' : string id of the publication
 
 
-## lexique
+# lexique
 
 [OPDSPublication](https://drafts.opds.io/opds-2.0#41-opds-publication) = publication OPDS2
 
 [R2Publication](https://github.com/readium/webpub-manifest) = Readium Webpub Publication Manifest
 
-## test
+# test
 
     npm run test
 
+the publication and webpub routes are tested
 
-## need improvement
+# How to publish an epub in the server
 
-- Improve the epub parser
-    - bug on DELETE route
-    - support audiobook, lpf, ...
-- authentification not implemented
-- deploy and create an edrlab OPDSFeed
-- create and manage new test
+3 ways to doing it
+
+- First method :
+    - Upload the epub file and the cover to the cloud storage (/store)
+    - fill a new OPDSPublication with the epub information
+    - upload this OPDSPublication to the /publication route
+- Second method :
+    - use thorium-reader to publish the publication to server
+        - not merged in the last thorium release
+        - https://github.com/edrlab/thorium-reader/pull/1113
+- third method :
+    - use the /generate route to automatically parse and upload you epub file.
+    - WARNING: This is an experimental feature with many bugs.
+
+# How the opds feed is generated
+
+At each publication uploaded in database : the feed generator is triggered to save a static home feed in database.
+
+During a request on /feed :
+- without query param : an home feed is served from the database.
+- with query param : a navigation feed is generated and served from query request in database.
+
+# How navigate in feed
+
+By default the home feed supply facets and groups :
+
+- facets :
+    - only language is actually picked from publication metadata
+
+- groups :
+    - each distintcs subject in publication metadata is picked to generate one group
+    - most downloaded : not implemented in this version (need to check store link and links them with publication id)
+    - most recent : query on database on the most recent publication
+
+there are also a last category called 'navigation' to request all publications
+
+each of links in home feed is filled with query param that follow your navigation. 
+ex: i am on the facets language when i go to a specific group , my choice of language is keep in the url query param generated by the feed.
+
+# How the search/navigation in feed works
+
+There a 2 modes of search in publication :
+
+When the 'query' or 'q' parameter is set -> the query search switch on the full text search service (algolia). For this first version the search inside specific facet or group is disable. Only a query request on all publications is enabled with algolia.
+
+To enable the search to specific facet or group you have to use the 'title' parameter.
+In this case the query search is made with the firestore noSql database and not with the algolia service. But firestore doesn't have an indexer, the search on title can be made only on the exact publication title.
